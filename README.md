@@ -64,8 +64,8 @@ El taller recibe distintos tipos de vehículos y cada uno se maneja según sus p
 
 | Integrante | GitHub |
 |------------|--------|
-| [Luck, apellido] | [@usuario] |
-| [Compañera] | [@usuario] |
+| [Lucía, Alcibar] | [@lualcibar] |
+| [Micaela, Campo] | [@usuario] |
 
 ## 🎓 Contexto académico
 
