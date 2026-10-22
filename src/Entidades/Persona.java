@@ -1,7 +1,9 @@
 package Entidades;
 
-/**SERA ABSTRACT YA QUE DE ESTA HEREDARAN ATRIBUTOS CLIENTE Y EMPLEADO
- * NO SE CREA OBJETO*/
+/**
+ * Clase padre de la que extienden Cliente y Empleado.
+ * Mantiene atributos: nombre, dni, telefono, email
+ */
 public abstract class Persona {
     protected String nombre;
     protected String dni;
