@@ -9,11 +9,11 @@
  * dniDueno: identificador del dueno del vehiculo
  */
 public abstract class Vehiculo {
-    private String patente; //hay que hacer que no pueda haber 2 iguales
+    private String patente;
     private String marca;
     private String modelo;
     private int anio;
-    private String dniDuenio;//debe vincular con futura clase 'Entidades.Cliente'
+    private String dniDuenio;// vincula con clase 'Entidades.Cliente'
 
     public Vehiculo(String patente, String marca, String modelo, int anio, String dniDuenio) {
         this.patente = patente;
@@ -40,8 +40,8 @@ public abstract class Vehiculo {
 
 
     /**
-     * con estos metodos evitamos duplicados en las listas de vehiculos
-     * @param obj   the reference object with which to compare.
+     * Con estos metodos evitamos duplicados en las listas de vehiculos
+     * @param obj es el objeto de referencia con el cual comparamos.
      * //@return
      */
     @Override
