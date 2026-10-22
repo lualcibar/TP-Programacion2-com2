@@ -1,3 +1,6 @@
+package Entidades;
+
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -6,7 +9,7 @@ import java.util.List;
  * extiende de persona y mantiene una lista de patentes de vehiculos asociados
  * debera soportar baja logica(en proceso)*/
 
-public class Cliente extends Persona{
+public class Cliente extends Persona {
     private List<String> vehiculos = new ArrayList<>();
     private boolean activo;
 
@@ -17,7 +20,7 @@ public class Cliente extends Persona{
 
     @Override
     public String toString () {
-        return "Cliente: " + nombre + " - DNI: " + dni + " - Telefono: "
+        return "Entidades.Cliente: " + nombre + " - DNI: " + dni + " - Telefono: "
                 + telefono + " - Email: " + email;
     }
 
@@ -35,11 +38,6 @@ public class Cliente extends Persona{
     public List<String> getVehiculos() {return vehiculos;}
     //public void setVehiculos(List<String> vehiculos) {this.vehiculos = vehiculos;}
     public boolean isActivo() {return activo;}
-
-
-
-
-
     public void setActivo(boolean activo) {
         this.activo = activo;
     }

@@ -13,7 +13,7 @@ public abstract class Vehiculo {
     private String marca;
     private String modelo;
     private int anio;
-    private String dniDuenio;//debe vincular con futura clase 'Cliente'
+    private String dniDuenio;//debe vincular con futura clase 'Entidades.Cliente'
 
     public Vehiculo(String patente, String marca, String modelo, int anio, String dniDuenio) {
         this.patente = patente;

@@ -1,3 +1,5 @@
+package Entidades;
+
 /**SERA ABSTRACT YA QUE DE ESTA HEREDARAN ATRIBUTOS CLIENTE Y EMPLEADO
  * NO SE CREA OBJETO*/
 public abstract class Persona {
