@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * representa un cliente del taller.
- * extiende de persona y mantiene una lista de patentes de vehiculos asociados
- * debera soportar baja logica(en proceso)*/
+ * Representa un cliente del taller.
+ * Extiende Persona y mantiene una lista de patentes de vehiculos asociados.
+ * Debera soportar baja logica (en proceso) mediante atributo activo.
+ */
 
 public class Cliente extends Persona {
     private List<String> vehiculos = new ArrayList<>();
@@ -20,19 +21,20 @@ public class Cliente extends Persona {
 
     @Override
     public String toString () {
-        return "Entidades.Cliente: " + nombre + " - DNI: " + dni + " - Telefono: "
+        return "Cliente: " + nombre + " - DNI: " + dni + " - Telefono: "
                 + telefono + " - Email: " + email;
     }
 
     /**
-     * agrega un vehiculo a la lista de vehiculos del cliente, pasamos patente por parametro
+     * Agrega un vehiculo a la lista de vehiculos del cliente,
+     * pasamos patente por @param
      */
     public void agregarVehiculo (String patente) {
         vehiculos.add(patente);
     }
     /**
-     * elimina el vehiculo de la lista de vehiculos del cliente,
-     * pasamos patente por param
+     * Elimina el vehiculo de la lista de vehiculos del cliente,
+     * pasamos patente por @param
      */
     public void eliminarVehiculo (String patente) {vehiculos.remove(patente);}
     public List<String> getVehiculos() {return vehiculos;}

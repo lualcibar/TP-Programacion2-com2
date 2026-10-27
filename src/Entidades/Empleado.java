@@ -2,14 +2,14 @@ package Entidades;
 import Enums.Cargo;
 
 /**
- * representa un empleado del taller.
- * extiende de persona y mantiene un cargo y salario
- * no se una un 'activo' como en Cliete porque la baja es fisica
+ * Representa un empleado del taller.
+ * Extiende Persona y mantiene un cargo y salario.
+ * No se una un 'activo' como en Cliente porque la baja es fisica.
  */
 
 public class Empleado extends Persona {
 
-    private Cargo cargo;//ADMIN, RECEP, MACAN
+    private Cargo cargo; // ADMIN, RECEP, MACAN
     private double salario;
 
     public Empleado(String nombre, String dni, String telefono,
