@@ -6,5 +6,7 @@
  Se debe 
  **crear una clase gestora, considero como nombre SistemaTaller o GestorTaller*
  **pensar en como administrar los autos, motos o que vehiculo puedan ser*
- **pensar como hacer el tema de la accion de reparar, como aplicamos interfaces y metodos correspondientes*
  **usar maps para relacionar tipo clave valor a los vehiculos con los clientes tiene el problema de si un cliente tiene mas de un vehiculo*
+
+
+ -- falta hacer un menu para admin y uno para user, se accedera a cada uno de estos mediante usuario y contrasenia
