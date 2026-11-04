@@ -1,6 +1,8 @@
 package Entidades;
 
 
+import Exceptions.DatosInvalidosException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +16,7 @@ public class Cliente extends Persona {
     private List<String> vehiculos = new ArrayList<>();
     private boolean activo;
 
-    public Cliente(String nombre, String dni, String telefono, String email) {
+    public Cliente(String nombre, String dni, String telefono, String email) throws DatosInvalidosException {
         super(nombre, dni, telefono, email);
         this.activo = true;
     }
