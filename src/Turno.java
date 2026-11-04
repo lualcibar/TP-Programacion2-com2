@@ -43,3 +43,12 @@ public class Turno {
 
 }
 
+/**
+ * Clase turno
+ * mantiene atributos:
+ * id: id del turno
+ * patenteVehiculo: patente del vehiculo que le pertenece el turno
+ * dniMecanico: sabemos que mecanico esta encargado de la reparacion
+ * fecha: fecha del turno
+ * esatdo: PENDIENTE, CANCELADO, ATENDIDO
+ */
