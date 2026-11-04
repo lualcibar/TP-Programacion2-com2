@@ -13,14 +13,26 @@ public abstract class Persona {
     protected String email;
 
     public Persona (String nombre, String dni, String telefono, String email) throws DatosInvalidosException {
-        if (nombre == null || nombre.equals("") || nombre.isBlank()) {
-            throw new DatosInvalidosException("El nombre es obligatorio");
+        if (nombre == null || nombre.isBlank()) {
+            throw new DatosInvalidosException("El nombre ingresado es invalido o esta vacio");
         }
+        if (dni == null || dni.isBlank() || dni.length() != 8) {
+            throw new DatosInvalidosException("El dni ingresado es invalido o esta vacio");
+        }
+        if  (telefono == null || telefono.isBlank()) {
+            throw new DatosInvalidosException("El telefono ingresado es invalido o esta vacio");
+        }
+        if (email == null || email.isBlank()) {
+            throw new DatosInvalidosException("El email ingresado es invalido o esta vacio");
+        }
+
         this.nombre = nombre;
         this.dni = dni;
         this.telefono = telefono;
         this.email = email;
     }
+
+
 
     public abstract String toString();
 

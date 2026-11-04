@@ -1,3 +1,4 @@
+import Exceptions.DatosInvalidosException;
 
 /**
  * Clase Vehiculo
@@ -8,14 +9,26 @@
  * anio: tributo caracteristico
  * dniDueno: identificador del dueno del vehiculo
  */
-public abstract class Vehiculo {
+public class Vehiculo {
     private String patente;
     private String marca;
     private String modelo;
     private int anio;
     private String dniDuenio;// vincula con clase 'Entidades.Cliente'
 
-    public Vehiculo(String patente, String marca, String modelo, int anio, String dniDuenio) {
+    public Vehiculo(String patente, String marca, String modelo, int anio,
+                    String dniDuenio)
+            throws DatosInvalidosException {
+        if(patente == null){
+            throw new DatosInvalidosException("Patente no puede ser nulo");
+        }
+        if(marca == null){
+            throw new DatosInvalidosException("Marca no puede ser nulo");
+        }
+        if(modelo == null){
+            throw new DatosInvalidosException("Modelo no puede ser nulo");
+        }
+        if
         this.patente = patente;
         this.marca = marca;
         this.modelo = modelo;
