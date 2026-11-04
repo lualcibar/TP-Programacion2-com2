@@ -1,5 +1,7 @@
 package Entidades;
 
+import Exceptions.DatosInvalidosException;
+
 /**
  * Clase padre de la que extienden Cliente y Empleado.
  * Mantiene atributos: nombre, dni, telefono, email
@@ -10,7 +12,10 @@ public abstract class Persona {
     protected String telefono;
     protected String email;
 
-    public Persona (String nombre, String dni, String telefono, String email) {
+    public Persona (String nombre, String dni, String telefono, String email) throws DatosInvalidosException {
+        if (nombre == null || nombre.equals("") || nombre.isBlank()) {
+            throw new DatosInvalidosException("El nombre es obligatorio");
+        }
         this.nombre = nombre;
         this.dni = dni;
         this.telefono = telefono;
