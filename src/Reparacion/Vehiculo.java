@@ -1,7 +1,11 @@
+package Reparacion;
+
 import Exceptions.DatosInvalidosException;
 
+import java.time.LocalDate;
+
 /**
- * Clase Vehiculo
+ * Clase Reparacion.Vehiculo
  * Mantiene atributos:
  * patente: identificador de cada vehiculo
  * marca: atributo caracteristico
@@ -28,7 +32,10 @@ public class Vehiculo {
         if(modelo == null){
             throw new DatosInvalidosException("Modelo no puede ser nulo");
         }
-        if
+        if(anio < 1980 || anio > LocalDate.now().getYear()){
+            throw new DatosInvalidosException("Anio ingresado no valido");
+        }
+        //pendiente la comprobacion del dni del cliente
         this.patente = patente;
         this.marca = marca;
         this.modelo = modelo;

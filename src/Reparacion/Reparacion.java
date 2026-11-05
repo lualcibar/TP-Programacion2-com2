@@ -1,7 +1,10 @@
 package Reparacion;
 
 import java.time.LocalDate;
+import Entidades.Empleado;
+import Enums.Cargo;
 import Enums.EstadoReparacion;
+import Exceptions.DatosInvalidosException;
 
 /**
  * Representa la reparación de un vehículo en el taller.
@@ -10,7 +13,9 @@ import Enums.EstadoReparacion;
  * Las fechas se asignan automáticamente al iniciar y finalizar.
  */
 public class Reparacion implements Reparable {
-    private int id;
+    private int id; // estaria beuno hacer que el id sea autoincremental en la bdd
+    //analizar si conviene pasar el dni y patente por param o
+    //pasar un objeto directamente
     private final String patenteVehiculo;
     private final String dniMecanico;
     private final String descripcion;
@@ -19,7 +24,23 @@ public class Reparacion implements Reparable {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
 
-    public Reparacion(int id, String patenteVehiculo, String dniMecanico, String descripcion, double costo) {
+    public Reparacion(int id, String patenteVehiculo, String dniMecanico,
+                      String descripcion, double costo) throws DatosInvalidosException {
+
+        if (patenteVehiculo == null || patenteVehiculo.isBlank()) {
+            throw new DatosInvalidosException("Patente vehiculo no valida");
+        }
+        if (dniMecanico == null || dniMecanico.isBlank()) {
+            throw new DatosInvalidosException("DNI ingresado no valido");
+        }
+        if (descripcion == null || descripcion.isBlank()) {
+            throw new DatosInvalidosException("Descripcion no valido");
+        }
+        if (costo < 0) {
+            throw new DatosInvalidosException("Costo negativo");
+        }
+
+
         this.id = id;
         this.patenteVehiculo = patenteVehiculo;
         this.dniMecanico = dniMecanico;
