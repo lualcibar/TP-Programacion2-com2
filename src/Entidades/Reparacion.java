@@ -1,21 +1,22 @@
-package Reparacion;
+package Entidades;
 
 import java.time.LocalDate;
-import Entidades.Empleado;
-import Enums.Cargo;
+
 import Enums.EstadoReparacion;
 import Exceptions.DatosInvalidosException;
+import Interfaces.Reparable;
 
 /**
  * Representa la reparación de un vehículo en el taller.
  * Implementa la interfaz Reparable, que obliga a definir iniciarReparacion() y finalizarReparacion().
  * El estado evoluciona: PENDIENTE → EN_CURSO → FINALIZADA.
  * Las fechas se asignan automáticamente al iniciar y finalizar.
- */
+ * El id es autoincremental en la base de datos: hay dos constructores, uno para
+ *  * crear una reparacion nueva (sin id) y otro para cuando se trae desde la base (con id).
+ *  */
+
 public class Reparacion implements Reparable {
-    private int id; // estaria beuno hacer que el id sea autoincremental en la bdd
-    //analizar si conviene pasar el dni y patente por param o
-    //pasar un objeto directamente
+    private int id;
     private final String patenteVehiculo;
     private final String dniMecanico;
     private final String descripcion;
@@ -24,6 +25,13 @@ public class Reparacion implements Reparable {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
 
+    /** Constructor para una reparacion nueva: el id lo genera la base de datos. */
+    public Reparacion(String patenteVehiculo, String dniMecanico,
+                      String descripcion, double costo) throws DatosInvalidosException {
+        this(0, patenteVehiculo, dniMecanico, descripcion, costo);
+    }
+
+    /** Constructor que setea el id: se usa al traer los datos desde la base de datos. */
     public Reparacion(int id, String patenteVehiculo, String dniMecanico,
                       String descripcion, double costo) throws DatosInvalidosException {
 
@@ -70,7 +78,7 @@ public class Reparacion implements Reparable {
      */
     public boolean estaActiva() { return estado != EstadoReparacion.FINALIZADA; }
 
-    // getters y setters
+    // getters y setters (el DAO usa los setters de estado y fechas al traer los datos)
 
     public int getId() {
         return id;
@@ -84,25 +92,17 @@ public class Reparacion implements Reparable {
         return patenteVehiculo;
     }
 
-    //public void setPatenteVehiculo(String patenteVehiculo) {this.patenteVehiculo = patenteVehiculo;}
-
     public String getDniMecanico() {
         return dniMecanico;
     }
-
-    //public void setDniMecanico(String dniMecanico) {this.dniMecanico = dniMecanico;}
 
     public String getDescripcion() {
         return descripcion;
     }
 
-    //public void setDescripcion(String descripcion) {this.descripcion = descripcion;}
-
     public double getCosto() {
         return costo;
     }
-
-    //public void setCosto(double costo) {this.costo = costo;}
 
     public EstadoReparacion getEstado() {
         return estado;
@@ -126,6 +126,14 @@ public class Reparacion implements Reparable {
 
     public void setFechaFin(LocalDate fechaFin) {
         this.fechaFin = fechaFin;
+    }
+
+    @Override
+    public String toString() {
+        return "Reparacion #" + id + " - Patente: " + patenteVehiculo + " - Mecanico DNI: " + dniMecanico
+                + " - " + descripcion + " - $" + costo + " - " + estado
+                + (fechaInicio != null ? " - Inicio: " + fechaInicio : "")
+                + (fechaFin != null ? " - Fin: " + fechaFin : "");
     }
 }
 
