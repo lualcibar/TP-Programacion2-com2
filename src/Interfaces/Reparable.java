@@ -1,4 +1,4 @@
-package Reparacion;
+package Interfaces;
 
 /**
  * Interfaz utilizada por la clase Reparacion.
