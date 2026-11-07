@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class EmpleadoDAO {
 
     public boolean insertar(Empleado e) throws SQLException {
