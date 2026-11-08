@@ -59,7 +59,7 @@ public class SistemaTaller {
         }
     }
 
-    /// cliente
+    /// inicio de sesion
     public Persona autenticar(String dni, String password)
             throws CredencialesInvalidasException, ClienteNoActivoException {
 
