@@ -13,16 +13,16 @@ import Exceptions.DatosInvalidosException;
 
 public class Empleado extends Persona {
 
-    private Cargo cargo; // ADMIN, RECEP, MACAN
+    private Cargo cargo; // ADMINISTRADOR, MECANICO, RECEPCIONISTA
     private double salario;
 
     public Empleado(String nombre, String dni, String telefono, String email,
                     String password, Cargo cargo, double salario) throws DatosInvalidosException {
-        super(nombre, dni, telefono, email,  password);
-        if  (cargo == null) {
+        super(nombre, dni, telefono, email, password);
+        if (cargo == null) {
             throw new DatosInvalidosException("El cargo ingresado es invalido");
         }
-        if(salario < 0) {
+        if (salario < 0) {
             throw new DatosInvalidosException("El salario ingresado es invalido");
         }
         this.cargo = cargo;
