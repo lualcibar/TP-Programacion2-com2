@@ -9,7 +9,6 @@ import java.util.List;
  * Representa un cliente del taller.
  * Extiende Persona y mantiene una lista de patentes de sus vehiculos ACTIVOS.
  * Soporta baja logica mediante el atributo activo (heredado de Persona).
- *
  * La lista de patentes no se guarda en una columna de la base: se reconstruye
  * al cargar el sistema a partir de la tabla vehiculo (columna dni_duenio),
  * asi hay una sola fuente de verdad.
