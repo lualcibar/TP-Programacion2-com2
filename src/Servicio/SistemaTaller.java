@@ -88,6 +88,8 @@ public class SistemaTaller {
         return cliente;
     }
 
+    /// clientes
+
     public boolean agregarCliente(Cliente c) throws SQLException, ElementoDuplicadoException {
         if (clientes.containsKey(c.getDni()) || empleados.containsKey(c.getDni())) {
             throw new ElementoDuplicadoException("Ya existe una persona con DNI: " + c.getDni());
