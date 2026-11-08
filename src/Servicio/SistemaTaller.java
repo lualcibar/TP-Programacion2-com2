@@ -220,7 +220,369 @@ public class SistemaTaller {
         return cantidad;
     }
 
+    /// vehiculos
 
+    public boolean agregarVehiculo(Vehiculo v)
+            throws SQLException, ClienteNoActivoException, ElementoDuplicadoException {
+        Cliente dueno = obtenerClienteActivo(v.getDniDuenio());
+        if (vehiculos.contains(v)) {
+            throw new ElementoDuplicadoException("Ya existe un vehiculo con la patente: " + v.getPatente());
+        }
+        if (vehiculoDAO.insertar(v)) {
+            vehiculos.add(v);
+            dueno.agregarVehiculo(v.getPatente());
+            return true;
+        }
+        return false;
+    }
+
+    public Vehiculo buscarVehiculo(String patente) throws VehiculoNoEncontradoException {
+        Vehiculo v = buscarVehiculoONull(patente);
+        if (v == null) {
+            throw new VehiculoNoEncontradoException(patente);
+        }
+        return v;
+    }
+
+    public List<Vehiculo> listarVehiculos() {
+        return new ArrayList<>(vehiculos);
+    }
+
+    public List<Vehiculo> listarVehiculosPorCliente(String dniCliente) throws ClienteNoEncontradoException {
+        Cliente c = buscarCliente(dniCliente);
+        List<Vehiculo> resultado = new ArrayList<>();
+        for (String patente : c.getVehiculos()) {
+            Vehiculo v = buscarVehiculoONull(patente);
+            if (v != null) {
+                resultado.add(v);
+            }
+        }
+        return resultado;
+    }
+
+    public boolean modificarVehiculo(String patente, String nuevaMarca, String nuevoModelo, int nuevoAnio)
+            throws SQLException, VehiculoNoEncontradoException {
+        Vehiculo anterior = buscarVehiculo(patente);
+
+        Vehiculo actualizado = new Vehiculo(anterior.getPatente(), nuevaMarca, nuevoModelo, nuevoAnio,
+                anterior.getDniDuenio());
+        actualizado.setActivo(anterior.isActivo());
+
+        if (vehiculoDAO.modificar(actualizado)) {
+            vehiculos.remove(anterior);
+            vehiculos.add(actualizado);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean darDeBajaVehiculo(String patente) throws SQLException, VehiculoNoEncontradoException {
+        Vehiculo v = buscarVehiculo(patente);
+        if (!v.isActivo()) {
+            throw new DatosInvalidosException("El vehiculo " + v.getPatente() + " ya esta dado de baja");
+        }
+        for (Reparacion r : reparaciones) {
+            if (r.getPatenteVehiculo().equalsIgnoreCase(v.getPatente()) && r.estaActiva()) {
+                throw new DatosInvalidosException("No se puede dar de baja: el vehiculo tiene la reparacion #"
+                        + r.getId() + " sin finalizar");
+            }
+        }
+        if (vehiculoDAO.darDeBaja(v.getPatente())) {
+            v.setActivo(false);
+            Cliente dueno = clientes.get(v.getDniDuenio());
+            if (dueno != null) {
+                dueno.eliminarVehiculo(v.getPatente());
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /// reparaciones
+
+    public boolean agregarReparacion(Reparacion r)
+            throws SQLException, VehiculoNoEncontradoException, ClienteNoActivoException,
+            EmpleadoNoEncontradoException {
+        Vehiculo v = obtenerVehiculoActivo(r.getPatenteVehiculo());
+        obtenerClienteActivo(v.getDniDuenio());
+        obtenerMecanicoActivo(r.getDniMecanico());
+
+        int idGenerado = reparacionDAO.insertar(r);
+        if (idGenerado > 0) {
+            reparaciones.add(r);
+            return true;
+        }
+        return false;
+    }
+
+    public Reparacion buscarReparacion(int id) throws ReparacionNoEncontradaException {
+        for (Reparacion r : reparaciones) {
+            if (r.getId() == id) {
+                return r;
+            }
+        }
+        throw new ReparacionNoEncontradaException(id);
+    }
+
+    public List<Reparacion> listarReparaciones() {
+        return new ArrayList<>(reparaciones);
+    }
+
+    public List<Reparacion> listarReparacionesActivas() {
+        List<Reparacion> resultado = new ArrayList<>();
+        for (Reparacion r : reparaciones) {
+            if (r.estaActiva()) {
+                resultado.add(r);
+            }
+        }
+        return resultado;
+    }
+
+    public List<Reparacion> listarReparacionesPorCliente(String dniCliente) throws ClienteNoEncontradoException {
+        buscarCliente(dniCliente); // lanza excepcion si el cliente no existe
+        List<Reparacion> resultado = new ArrayList<>();
+        for (Reparacion r : reparaciones) {
+            Vehiculo v = buscarVehiculoONull(r.getPatenteVehiculo());
+            if (v != null && v.getDniDuenio().equals(dniCliente)) {
+                resultado.add(r);
+            }
+        }
+        return resultado;
+    }
+
+    public boolean modificarReparacion(int id, String nuevaDescripcion, double nuevoCosto)
+            throws SQLException, ReparacionNoEncontradaException {
+        Reparacion anterior = buscarReparacion(id);
+        if (!anterior.estaActiva()) {
+            throw new DatosInvalidosException("No se puede modificar una reparacion FINALIZADA");
+        }
+
+        Reparacion actualizada = new Reparacion(id, anterior.getPatenteVehiculo(), anterior.getDniMecanico(),
+                nuevaDescripcion, nuevoCosto);
+        actualizada.setEstado(anterior.getEstado());
+        actualizada.setFechaInicio(anterior.getFechaInicio());
+        actualizada.setFechaFin(anterior.getFechaFin());
+
+        if (reparacionDAO.modificar(actualizada)) {
+            for (int i = 0; i < reparaciones.size(); i++) {
+                if (reparaciones.get(i).getId() == id) {
+                    reparaciones.set(i, actualizada);
+                    break;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public boolean iniciarReparacion(int id) throws SQLException, ReparacionNoEncontradaException {
+        Reparacion r = buscarReparacion(id);
+        EstadoReparacion estadoAnterior = r.getEstado();
+        LocalDate inicioAnterior = r.getFechaInicio();
+        LocalDate finAnterior = r.getFechaFin();
+
+        r.iniciarReparacion(); // lanza DatosInvalidosException (y no cambia nada) si no estaba PENDIENTE
+        return guardarCambioDeEstado(r, estadoAnterior, inicioAnterior, finAnterior);
+    }
+
+    public boolean finalizarReparacion(int id) throws SQLException, ReparacionNoEncontradaException {
+        Reparacion r = buscarReparacion(id);
+        EstadoReparacion estadoAnterior = r.getEstado();
+        LocalDate inicioAnterior = r.getFechaInicio();
+        LocalDate finAnterior = r.getFechaFin();
+
+        r.finalizarReparacion();
+        return guardarCambioDeEstado(r, estadoAnterior, inicioAnterior, finAnterior);
+    }
+
+    private boolean guardarCambioDeEstado(Reparacion r, EstadoReparacion estadoAnterior,
+                                          LocalDate inicioAnterior, LocalDate finAnterior) throws SQLException {
+        boolean guardado;
+        try {
+            guardado = reparacionDAO.modificar(r);
+        } catch (SQLException e) {
+            restaurar(r, estadoAnterior, inicioAnterior, finAnterior);
+            throw e;
+        }
+        if (!guardado) {
+            restaurar(r, estadoAnterior, inicioAnterior, finAnterior);
+        }
+        return guardado;
+    }
+
+    private void restaurar(Reparacion r, EstadoReparacion estado, LocalDate inicio, LocalDate fin) {
+        r.setEstado(estado);
+        r.setFechaInicio(inicio);
+        r.setFechaFin(fin);
+    }
+
+    /// turnos
+
+    public boolean agregarTurno(Turno t)
+            throws SQLException, VehiculoNoEncontradoException, ClienteNoActivoException,
+            EmpleadoNoEncontradoException {
+        Vehiculo v = obtenerVehiculoActivo(t.getPatenteVehiculo());
+        obtenerClienteActivo(v.getDniDuenio());
+        obtenerMecanicoActivo(t.getDniMecanico());
+        validarFechaNoPasada(t.getFecha());
+
+        int idGenerado = turnoDAO.insertar(t);
+        if (idGenerado > 0) {
+            turnos.add(t);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean agregarTurnoDeCliente(String dniCliente, Turno t)
+            throws SQLException, VehiculoNoEncontradoException, ClienteNoActivoException,
+            EmpleadoNoEncontradoException {
+        obtenerClienteActivo(dniCliente);
+        Vehiculo v = obtenerVehiculoActivo(t.getPatenteVehiculo());
+        if (!v.getDniDuenio().equals(dniCliente)) {
+            throw new DatosInvalidosException("El vehiculo " + v.getPatente() + " no te pertenece");
+        }
+        return agregarTurno(t);
+    }
+
+    public Turno buscarTurno(int id) throws TurnoNoEncontradoException {
+        for (Turno t : turnos) {
+            if (t.getId() == id) {
+                return t;
+            }
+        }
+        throw new TurnoNoEncontradoException(id);
+    }
+
+    public List<Turno> listarTurnos() {
+        return new ArrayList<>(turnos);
+    }
+
+    public List<Turno> listarTurnosPorCliente(String dniCliente) throws ClienteNoEncontradoException {
+        buscarCliente(dniCliente);
+        List<Turno> resultado = new ArrayList<>();
+        for (Turno t : turnos) {
+            if (turnoPerteneceACliente(t, dniCliente)) {
+                resultado.add(t);
+            }
+        }
+        return resultado;
+    }
+
+    public boolean modificarTurno(int id, String nuevoDniMecanico, LocalDate nuevaFecha)
+            throws SQLException, TurnoNoEncontradoException, EmpleadoNoEncontradoException {
+        Turno anterior = buscarTurno(id);
+        if (anterior.getEstado() != EstadoTurno.PENDIENTE) {
+            throw new DatosInvalidosException("Solo se puede modificar un turno PENDIENTE (estado actual: "
+                    + anterior.getEstado() + ")");
+        }
+        obtenerMecanicoActivo(nuevoDniMecanico);
+        validarFechaNoPasada(nuevaFecha);
+
+        Turno actualizado = new Turno(id, anterior.getPatenteVehiculo(), nuevoDniMecanico, nuevaFecha,
+                EstadoTurno.PENDIENTE);
+        if (turnoDAO.modificar(actualizado)) {
+            reemplazarTurno(actualizado);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean cancelarTurno(int id) throws SQLException, TurnoNoEncontradoException {
+        Turno t = buscarTurno(id);
+        if (t.getEstado() != EstadoTurno.PENDIENTE) {
+            throw new DatosInvalidosException("Solo se puede cancelar un turno PENDIENTE (estado actual: "
+                    + t.getEstado() + ")");
+        }
+        if (turnoDAO.cancelar(id)) {
+            t.setEstado(EstadoTurno.CANCELADO);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean cancelarTurnoDeCliente(String dniCliente, int id) throws SQLException, TurnoNoEncontradoException {
+        Turno t = buscarTurno(id);
+        if (!turnoPerteneceACliente(t, dniCliente)) {
+            throw new DatosInvalidosException("El turno " + id + " no te pertenece");
+        }
+        return cancelarTurno(id);
+    }
+
+    public boolean marcarTurnoAtendido(int id) throws SQLException, TurnoNoEncontradoException {
+        Turno anterior = buscarTurno(id);
+        if (anterior.getEstado() != EstadoTurno.PENDIENTE) {
+            throw new DatosInvalidosException("Solo se puede atender un turno PENDIENTE (estado actual: "
+                    + anterior.getEstado() + ")");
+        }
+        Turno actualizado = new Turno(id, anterior.getPatenteVehiculo(), anterior.getDniMecanico(),
+                anterior.getFecha(), EstadoTurno.ATENDIDO);
+        if (turnoDAO.modificar(actualizado)) {
+            reemplazarTurno(actualizado);
+            return true;
+        }
+        return false;
+    }
+
+    private void reemplazarTurno(Turno nuevo) {
+        for (int i = 0; i < turnos.size(); i++) {
+            if (turnos.get(i).getId() == nuevo.getId()) {
+                turnos.set(i, nuevo);
+                break;
+            }
+        }
+    }
+
+    private boolean turnoPerteneceACliente(Turno t, String dniCliente) {
+        Vehiculo v = buscarVehiculoONull(t.getPatenteVehiculo());
+        return v != null && v.getDniDuenio().equals(dniCliente);
+    }
+
+    /// validaciones auxiliares
+
+    private Vehiculo buscarVehiculoONull(String patente) {
+        Iterator<Vehiculo> it = vehiculos.iterator();
+        while (it.hasNext()) {
+            Vehiculo v = it.next();
+            if (v.getPatente().equalsIgnoreCase(patente)) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    private Cliente obtenerClienteActivo(String dni) throws ClienteNoActivoException {
+        Cliente c = clientes.get(dni);
+        if (c == null || !c.isActivo()) {
+            throw new ClienteNoActivoException(dni);
+        }
+        return c;
+    }
+
+    private Vehiculo obtenerVehiculoActivo(String patente) throws VehiculoNoEncontradoException {
+        Vehiculo v = buscarVehiculo(patente);
+        if (!v.isActivo()) {
+            throw new DatosInvalidosException("El vehiculo " + v.getPatente() + " esta dado de baja");
+        }
+        return v;
+    }
+
+    private Empleado obtenerMecanicoActivo(String dni) throws EmpleadoNoEncontradoException {
+        Empleado e = buscarEmpleado(dni);
+        if (!e.isActivo()) {
+            throw new DatosInvalidosException("El empleado " + dni + " esta dado de baja");
+        }
+        if (e.getCargo() != Cargo.MECANICO) {
+            throw new DatosInvalidosException("El empleado " + dni + " no es mecanico (cargo: " + e.getCargo() + ")");
+        }
+        return e;
+    }
+
+    private void validarFechaNoPasada(LocalDate fecha) {
+        if (fecha.isBefore(LocalDate.now())) {
+            throw new DatosInvalidosException("La fecha del turno no puede ser anterior a hoy");
+        }
+    }
 
 
 
