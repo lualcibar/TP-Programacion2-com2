@@ -1,4 +1,4 @@
--- =====================================================================
+
 --  BASE DE DATOS DEL SISTEMA TALLER MECANICO
 --  Ejecutar este script completo en MySQL (Workbench, consola, etc.)
 --  ATENCION: borra y vuelve a crear la base 'taller_mecanico'. Si lo volves
@@ -12,9 +12,13 @@
 --
 --  Baja logica: columna 'activo' en cliente, empleado y vehiculo; el turno usa
 --  el estado CANCELADO. Nunca se hace DELETE, por eso las FK son RESTRICT.
--- =====================================================================
+
 DROP DATABASE IF EXISTS taller_mecanico;
-CREATE DATABASE taller_mecanico CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE taller_mecanico CHARACTER
+SET utf8mb4 --es la codificación de los textos. Sirve para guardar bien tildes y eñes (Pérez, Rodríguez, Núñez).
+COLLATE utf8mb4_general_ci; --son las reglas para comparar textos.
+                            --El ci significa que no distingue mayúsculas de minúsculas,
+                            --así que ab123cd y AB123CD son la misma patente en la clave primaria.
 USE taller_mecanico;
 
 CREATE TABLE cliente (
@@ -70,7 +74,7 @@ CREATE TABLE turno (
     FOREIGN KEY (dni_mecanico)     REFERENCES empleado(dni)
 );
 
--- ---------- CLIENTES (15) ----------
+--            CLIENTES (15)
 INSERT INTO cliente (dni, nombre, telefono, email, password, activo) VALUES
     ('18555666', 'Carlos Pérez', '2236661122', 'carlos@gmail.com', '1234', FALSE),
     ('20555666', 'Rodrigo Vega', '2236667788', 'rodri@gmail.com', '1234', TRUE),
@@ -88,7 +92,7 @@ INSERT INTO cliente (dni, nombre, telefono, email, password, activo) VALUES
     ('40666777', 'Sofía Herrera', '2237773344', 'sofia@gmail.com', '1234', TRUE),
     ('41222333', 'Florencia Castro', '2233334455', 'flor@gmail.com', '1234', TRUE);
 
--- ---------- EMPLEADOS (15) ----------
+--            EMPLEADOS (15)
 INSERT INTO empleado (dni, nombre, telefono, email, password, cargo, salario, activo) VALUES
     ('15123456', 'Roberto Sánchez', '2231234567', 'roberto@taller.com', '1234', 'ADMINISTRADOR', 200000, TRUE),
     ('17901234', 'Hernán Ortiz', '2239012345', 'hernan@taller.com', '1234', 'MECANICO', 145000, TRUE),
@@ -106,7 +110,7 @@ INSERT INTO empleado (dni, nombre, telefono, email, password, cargo, salario, ac
     ('44456789', 'Cecilia Ibáñez', '2234567800', 'ceci@taller.com', '1234', 'MECANICO', 147000, TRUE),
     ('47832917', 'Lucía Alcibar', '2235425164', 'lucia@taller.com', '1234', 'MECANICO', 150000, TRUE);
 
--- ---------- VEHICULOS (15) ----------
+--            VEHICULOS (15)
 INSERT INTO vehiculo (patente, marca, modelo, anio, dni_duenio, activo) VALUES
     ('AB456WX', 'Toyota', 'Yaris', 2023, '37444555', TRUE),
     ('AB786RG', 'Ford', 'Palio', 2014, '21931131', TRUE),
@@ -124,7 +128,7 @@ INSERT INTO vehiculo (patente, marca, modelo, anio, dni_duenio, activo) VALUES
     ('WX890ST', 'Volkswagen', 'Polo', 2020, '41222333', TRUE),
     ('YZ123UV', 'Renault', 'Logan', 2012, '24333444', TRUE);
 
--- ---------- REPARACIONES (15) ----------
+--            REPARACIONES (15)
 INSERT INTO reparacion (id, patente_vehiculo, dni_mecanico, descripcion, costo, estado, fecha_inicio, fecha_fin) VALUES
     (1, 'AB786RG', '47832917', 'Cambio de embrague', 85000, 'FINALIZADA', '2026-05-10', '2026-05-12'),
     (2, 'DC432HJ', '19345678', 'Reparación de frenos', 45000, 'FINALIZADA', '2026-05-15', '2026-05-15'),
@@ -142,7 +146,7 @@ INSERT INTO reparacion (id, patente_vehiculo, dni_mecanico, descripcion, costo, 
     (14, 'DC432HJ', '32456789', 'Cambio de bujías', 28000, 'PENDIENTE', NULL, NULL),
     (15, 'AB786RG', '39678901', 'Reparación de escape', 42000, 'PENDIENTE', NULL, NULL);
 
--- ---------- TURNOS (15) ----------
+--            TURNOS (15)
 INSERT INTO turno (id, patente_vehiculo, dni_mecanico, fecha, estado) VALUES
     (1, 'AB786RG', '47832917', '2026-06-25', 'PENDIENTE'),
     (2, 'DC432HJ', '19345678', '2026-06-26', 'PENDIENTE'),
