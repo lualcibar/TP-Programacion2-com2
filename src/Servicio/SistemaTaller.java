@@ -109,6 +109,10 @@ public class SistemaTaller {
         return c;
     }
 
+    public List<Cliente> listarClientes() {
+        return new ArrayList<>(clientes.values());
+    }
+
     public boolean modificarCliente(String dni, String nuevoNombre, String nuevoTelefono, String nuevoEmail)
             throws SQLException, ClienteNoEncontradoException {
         Cliente anterior = buscarCliente(dni);
