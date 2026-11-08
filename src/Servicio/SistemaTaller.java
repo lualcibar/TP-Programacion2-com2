@@ -139,6 +139,89 @@ public class SistemaTaller {
         return false;
     }
 
+    /// empleados
+
+    public boolean agregarEmpleado(Empleado e) throws SQLException, ElementoDuplicadoException {
+        if (empleados.containsKey(e.getDni()) || clientes.containsKey(e.getDni())) {
+            throw new ElementoDuplicadoException("Ya existe una persona con DNI: " + e.getDni());
+        }
+        if (empleadoDAO.insertar(e)) {
+            empleados.put(e.getDni(), e);
+            return true;
+        }
+        return false;
+    }
+
+    public Empleado buscarEmpleado(String dni) throws EmpleadoNoEncontradoException {
+        Empleado e = empleados.get(dni);
+        if (e == null) {
+            throw new EmpleadoNoEncontradoException(dni);
+        }
+        return e;
+    }
+
+    public List<Empleado> listarEmpleados() {
+        return new ArrayList<>(empleados.values());
+    }
+
+    public List<Empleado> listarMecanicosActivos() {
+        List<Empleado> resultado = new ArrayList<>();
+        for (Empleado e : empleados.values()) {
+            if (e.getCargo() == Cargo.MECANICO && e.isActivo()) {
+                resultado.add(e);
+            }
+        }
+        return resultado;
+    }
+
+    public boolean modificarEmpleado(String dni, String nuevoNombre, String nuevoTelefono, String nuevoEmail,
+                                     Cargo nuevoCargo, double nuevoSalario)
+            throws SQLException, EmpleadoNoEncontradoException {
+        Empleado anterior = buscarEmpleado(dni);
+
+        if (anterior.getCargo() == Cargo.ADMINISTRADOR && anterior.isActivo()
+                && nuevoCargo != Cargo.ADMINISTRADOR && contarAdministradoresActivos() == 1) {
+            throw new DatosInvalidosException("No se puede cambiar el cargo del unico administrador activo");
+        }
+
+        Empleado actualizado = new Empleado(nuevoNombre, dni, nuevoTelefono, nuevoEmail,
+                anterior.getPassword(), nuevoCargo, nuevoSalario);
+        actualizado.setActivo(anterior.isActivo());
+
+        if (empleadoDAO.modificar(actualizado)) {
+            empleados.put(dni, actualizado);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean darDeBajaEmpleado(String dni) throws SQLException, EmpleadoNoEncontradoException {
+        Empleado e = buscarEmpleado(dni);
+        if (!e.isActivo()) {
+            throw new DatosInvalidosException("El empleado " + dni + " ya esta dado de baja");
+        }
+        if (e.getCargo() == Cargo.ADMINISTRADOR && contarAdministradoresActivos() == 1) {
+            throw new DatosInvalidosException("No se puede dar de baja al unico administrador activo");
+        }
+        if (empleadoDAO.darDeBaja(dni)) {
+            e.setActivo(false);
+            return true;
+        }
+        return false;
+    }
+
+    private int contarAdministradoresActivos() {
+        int cantidad = 0;
+        for (Empleado e : empleados.values()) {
+            if (e.getCargo() == Cargo.ADMINISTRADOR && e.isActivo()) {
+                cantidad++;
+            }
+        }
+        return cantidad;
+    }
+
+
+
 
 
 
