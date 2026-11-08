@@ -5,39 +5,39 @@ import Exceptions.DatosInvalidosException;
 import java.time.LocalDate;
 
 /**
- * Clase Entidades.Vehiculo
+ * Clase Vehiculo
  * Mantiene atributos:
- * patente: identificador de cada vehiculo
+ * patente: identificador de cada vehiculo (clave primaria en la base de datos)
  * marca: atributo caracteristico
- * modelo: atributo caracteritico
- * anio: tributo caracteristico
- * dniDueno: identificador del dueno del vehiculo
+ * modelo: atributo caracteristico
+ * anio: atributo caracteristico
+ * dniDuenio: identificador del duenio del vehiculo (vincula con 'Entidades.Cliente')
+ * activo: baja logica (se conserva el historial de reparaciones y turnos del vehiculo)
  */
 public class Vehiculo {
     private final String patente;
     private final String marca;
     private final String modelo;
     private final int anio;
-    private final String dniDuenio;// vincula con clase 'Entidades.Cliente'
+    private final String dniDuenio;
     private boolean activo;
-
 
     public Vehiculo(String patente, String marca, String modelo, int anio,
                     String dniDuenio) throws DatosInvalidosException {
-        if(patente == null || patente.isBlank()){
+        if (patente == null || patente.isBlank()) {
             throw new DatosInvalidosException("Patente no puede ser nula o vacia");
         }
-        if(marca == null || marca.isBlank()){
+        if (marca == null || marca.isBlank()) {
             throw new DatosInvalidosException("Marca no puede ser nula o vacia");
         }
-        if(modelo == null  || modelo.isBlank()){
-            throw new DatosInvalidosException("Modelo no puede ser nula o vacia");
+        if (modelo == null || modelo.isBlank()) {
+            throw new DatosInvalidosException("Modelo no puede ser nulo o vacio");
         }
-        if(anio < 1980 || anio > LocalDate.now().getYear()){
+        if (anio < 1980 || anio > LocalDate.now().getYear()) {
             throw new DatosInvalidosException("Anio ingresado no valido");
         }
-        if(dniDuenio == null || dniDuenio.isBlank()){
-            throw new DatosInvalidosException("DNI ingresado no valido");
+        if (dniDuenio == null || dniDuenio.isBlank()) {
+            throw new DatosInvalidosException("El dni del duenio no puede ser nulo o vacio");
         }
         // la patente siempre se guarda en mayusculas para que AB123CD y ab123cd sean la misma
         this.patente = patente.trim().toUpperCase();
@@ -62,11 +62,10 @@ public class Vehiculo {
                 + dniDuenio + (activo ? "" : " - DADO DE BAJA");
     }
 
-
     /**
-     * Con estos metodos evitamos duplicados en las listas de vehiculos
+     * Con estos metodos evitamos duplicados en el Set de vehiculos:
+     * dos vehiculos son el mismo si tienen la misma patente.
      * @param obj es el objeto de referencia con el cual comparamos.
-     * //@return
      */
     @Override
     public boolean equals(Object obj) {
@@ -79,7 +78,4 @@ public class Vehiculo {
     public int hashCode() {
         return patente.toUpperCase().hashCode();
     }
-
-
-
 }

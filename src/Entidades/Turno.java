@@ -5,7 +5,15 @@ import Exceptions.DatosInvalidosException;
 
 import java.time.LocalDate;
 
-
+/**
+ * Clase Turno
+ * Mantiene atributos:
+ * id: id del turno (autoincremental en la base de datos)
+ * patenteVehiculo: patente del vehiculo al que le pertenece el turno
+ * dniMecanico: mecanico encargado del turno
+ * fecha: fecha del turno
+ * estado: PENDIENTE, CANCELADO (baja logica), ATENDIDO
+ */
 public class Turno {
     private int id;
     private final String patenteVehiculo;
@@ -61,4 +69,3 @@ public class Turno {
                 + " - Fecha: " + fecha + " - " + estado;
     }
 }
-

@@ -23,7 +23,7 @@ public class Cliente extends Persona {
     }
 
     @Override
-    public String toString () {
+    public String toString() {
         return "Cliente: " + nombre + " - DNI: " + dni + " - Telefono: "
                 + telefono + " - Email: " + email + " - " + estadoTexto();
     }

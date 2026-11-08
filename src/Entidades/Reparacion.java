@@ -1,20 +1,19 @@
 package Entidades;
 
-import java.time.LocalDate;
-
 import Enums.EstadoReparacion;
 import Exceptions.DatosInvalidosException;
 import Interfaces.Reparable;
 
-/**
- * Representa la reparación de un vehículo en el taller.
- * Implementa la interfaz Reparable, que obliga a definir iniciarReparacion() y finalizarReparacion().
- * El estado evoluciona: PENDIENTE → EN_CURSO → FINALIZADA.
- * Las fechas se asignan automáticamente al iniciar y finalizar.
- * El id es autoincremental en la base de datos: hay dos constructores, uno para
- *  * crear una reparacion nueva (sin id) y otro para cuando se trae desde la base (con id).
- *  */
+import java.time.LocalDate;
 
+/**
+ * Representa la reparacion de un vehiculo en el taller.
+ * Implementa la interfaz Reparable, que obliga a definir iniciarReparacion() y finalizarReparacion().
+ * El estado evoluciona: PENDIENTE -> EN_CURSO -> FINALIZADA.
+ * Las fechas se asignan automaticamente al iniciar y finalizar.
+ * El id es autoincremental en la base de datos: hay dos constructores, uno para
+ * crear una reparacion nueva (sin id) y otro para cuando se trae desde la base (con id).
+ */
 public class Reparacion implements Reparable {
     private int id;
     private final String patenteVehiculo;
@@ -42,12 +41,11 @@ public class Reparacion implements Reparable {
             throw new DatosInvalidosException("DNI ingresado no valido");
         }
         if (descripcion == null || descripcion.isBlank()) {
-            throw new DatosInvalidosException("Descripcion no valido");
+            throw new DatosInvalidosException("Descripcion no valida");
         }
         if (costo < 0) {
             throw new DatosInvalidosException("Costo negativo");
         }
-
 
         this.id = id;
         this.patenteVehiculo = patenteVehiculo;
@@ -59,74 +57,60 @@ public class Reparacion implements Reparable {
 
     /**
      * Cambia el estado a EN_CURSO y registra la fecha de inicio.
+     * Solo se puede iniciar una reparacion PENDIENTE.
      */
+    @Override
     public void iniciarReparacion() {
-        this.estado = EstadoReparacion.valueOf("EN_CURSO");
+        if (estado != EstadoReparacion.PENDIENTE) {
+            throw new DatosInvalidosException("Solo se puede iniciar una reparacion PENDIENTE (estado actual: " + estado + ")");
+        }
+        this.estado = EstadoReparacion.EN_CURSO;
         this.fechaInicio = LocalDate.now();
     }
 
     /**
      * Cambia el estado a FINALIZADA y registra la fecha de fin.
+     * Solo se puede finalizar una reparacion EN_CURSO.
      */
+    @Override
     public void finalizarReparacion() {
-        this.estado = EstadoReparacion.valueOf("FINALIZADA");
+        if (estado != EstadoReparacion.EN_CURSO) {
+            throw new DatosInvalidosException("Solo se puede finalizar una reparacion EN_CURSO (estado actual: " + estado + ")");
+        }
+        this.estado = EstadoReparacion.FINALIZADA;
         this.fechaFin = LocalDate.now();
     }
 
     /**
-     * @return true si la reparación no está en estado FINALIZADA.
+     * @return true si la reparacion no esta en estado FINALIZADA.
      */
     public boolean estaActiva() { return estado != EstadoReparacion.FINALIZADA; }
 
     // getters y setters (el DAO usa los setters de estado y fechas al traer los datos)
 
-    public int getId() {
-        return id;
-    }
+    public int getId() {return id;}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public void setId(int id) {this.id = id;}
 
-    public String getPatenteVehiculo() {
-        return patenteVehiculo;
-    }
+    public String getPatenteVehiculo() {return patenteVehiculo;}
 
-    public String getDniMecanico() {
-        return dniMecanico;
-    }
+    public String getDniMecanico() {return dniMecanico;}
 
-    public String getDescripcion() {
-        return descripcion;
-    }
+    public String getDescripcion() {return descripcion;}
 
-    public double getCosto() {
-        return costo;
-    }
+    public double getCosto() {return costo;}
 
-    public EstadoReparacion getEstado() {
-        return estado;
-    }
+    public EstadoReparacion getEstado() {return estado;}
 
-    public void setEstado(EstadoReparacion estado) {
-        this.estado = estado;
-    }
+    public void setEstado(EstadoReparacion estado) {this.estado = estado;}
 
-    public LocalDate getFechaInicio() {
-        return fechaInicio;
-    }
+    public LocalDate getFechaInicio() {return fechaInicio;}
 
-    public void setFechaInicio(LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
-    }
+    public void setFechaInicio(LocalDate fechaInicio) {this.fechaInicio = fechaInicio;}
 
-    public LocalDate getFechaFin() {
-        return fechaFin;
-    }
+    public LocalDate getFechaFin() {return fechaFin;}
 
-    public void setFechaFin(LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
-    }
+    public void setFechaFin(LocalDate fechaFin) {this.fechaFin = fechaFin;}
 
     @Override
     public String toString() {
@@ -136,4 +120,3 @@ public class Reparacion implements Reparable {
                 + (fechaFin != null ? " - Fin: " + fechaFin : "");
     }
 }
-
