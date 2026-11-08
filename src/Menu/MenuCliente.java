@@ -11,6 +11,12 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Menu del CLIENTE (segundo tipo de acceso al sistema).
+ * El cliente ya esta logueado, por eso nunca se le pide el DNI: todas las operaciones
+ * usan el DNI del cliente que inicio sesion, y asi solo puede ver y tocar lo suyo.
+ * A traves de este menu puede ver sus datos y vehiculos, pedir y cancelar turnos y ver sus reparaciones.
+ */
 public final class MenuCliente {
 
     private MenuCliente() {
@@ -70,6 +76,10 @@ public final class MenuCliente {
         }
     }
 
+    /**
+     * Pide los datos del turno. Se muestran los mecanicos disponibles (solo nombre y DNI,
+     * nunca el salario) para que el cliente pueda elegir uno.
+     */
     private static void pedirTurno(SistemaTaller taller, String dniCliente) throws SQLException, TallerException {
         System.out.println("Mecanicos disponibles:");
         for (Empleado mecanico : taller.listarMecanicosActivos()) {

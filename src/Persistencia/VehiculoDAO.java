@@ -10,8 +10,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO de Vehiculo (tabla 'vehiculo'). La patente es la clave primaria.
+ */
 public class VehiculoDAO {
 
+    // CREATE
     public boolean insertar(Vehiculo v) throws SQLException {
         String sql = "INSERT INTO vehiculo (patente, marca, modelo, anio, dni_duenio, activo) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -29,6 +33,7 @@ public class VehiculoDAO {
         }
     }
 
+    // READ: listar todos los vehiculos (activos y dados de baja)
     public List<Vehiculo> listar() throws SQLException {
         List<Vehiculo> vehiculos = new ArrayList<>();
         String sql = "SELECT patente, marca, modelo, anio, dni_duenio, activo FROM vehiculo ORDER BY patente";
@@ -44,6 +49,7 @@ public class VehiculoDAO {
         return vehiculos;
     }
 
+    // READ: buscar por patente en la base de datos
     public Vehiculo buscarPorPatente(String patente) throws SQLException {
         String sql = "SELECT patente, marca, modelo, anio, dni_duenio, activo FROM vehiculo WHERE patente = ?";
 
@@ -61,6 +67,7 @@ public class VehiculoDAO {
         return null;
     }
 
+    // UPDATE (la patente y el duenio no cambian)
     public boolean modificar(Vehiculo v) throws SQLException {
         String sql = "UPDATE vehiculo SET marca = ?, modelo = ?, anio = ?, activo = ? WHERE patente = ?";
 
@@ -77,6 +84,7 @@ public class VehiculoDAO {
         }
     }
 
+    // BAJA LOGICA: se conserva el historial de reparaciones y turnos del vehiculo
     public boolean darDeBaja(String patente) throws SQLException {
         String sql = "UPDATE vehiculo SET activo = FALSE WHERE patente = ?";
 

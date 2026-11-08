@@ -10,6 +10,14 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Menu del ADMINISTRADOR: tiene acceso completo (ABMCL) a clientes, empleados, vehiculos,
+ * turnos y reparaciones. (ABMCL = Alta, Baja, Modificacion, Consulta, Listado)
+ * Todas las opciones llaman a metodos del SistemaTaller. Los errores se atrapan aca:
+ *  - TallerException: excepciones personalizadas del negocio (no encontrado, duplicado, etc.)
+ *  - DatosInvalidosException: datos que no pasan las validaciones de los constructores
+ *  - SQLException: problemas con la base de datos
+ */
 public final class MenuAdmin {
 
     private MenuAdmin() {
@@ -53,6 +61,7 @@ public final class MenuAdmin {
         }
     }
 
+    /** Imprime una lista (o un mensaje si esta vacia). */
     private static void mostrarLista(List<?> lista, String mensajeVacio) {
         if (lista.isEmpty()) {
             System.out.println(mensajeVacio);
@@ -63,8 +72,11 @@ public final class MenuAdmin {
         }
     }
 
-    ///CLIENTES
+    //                    CLIENTES
 
+    /**
+     * Sub-menu de Clientes: listar, buscar, agregar, modificar o dar de baja (baja logica).
+     */
     private static void menuClientes(SistemaTaller taller) {
         int op = -1;
         while (op != 0) {
@@ -123,7 +135,11 @@ public final class MenuAdmin {
         }
     }
 
-    /// EMPLEADOS
+    //                    EMPLEADOS
+
+    /**
+     * Sub-menu de Empleados: listar, buscar, agregar, modificar o dar de baja (baja logica).
+     */
     private static void menuEmpleados(SistemaTaller taller) {
         int op = -1;
         while (op != 0) {
@@ -186,8 +202,11 @@ public final class MenuAdmin {
         }
     }
 
-    ///VEHICULOS
+    //                  VEHICULOS
 
+    /**
+     * Sub-menu de Vehiculos: listar, buscar, agregar, modificar o dar de baja (baja logica).
+     */
     private static void menuVehiculos(SistemaTaller taller) {
         int op = -1;
         while (op != 0) {
@@ -246,12 +265,17 @@ public final class MenuAdmin {
         }
     }
 
-    ///TURNOS
+    //                    TURNOS
+
+    /**
+     * Sub-menu de Turnos: listar, buscar, agregar, modificar, cancelar (baja logica) o marcar como atendido.
+     */
     private static void menuTurnos(SistemaTaller taller) {
         int op = -1;
         while (op != 0) {
             System.out.println("\n-- Turnos --");
-            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Cancelar  6. Marcar atendido  0. Volver");
+            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Cancelar  6. Marcar atendido" +
+                    "  0. Volver");
             op = Consola.entero("Opcion: ");
 
             try {
@@ -308,12 +332,18 @@ public final class MenuAdmin {
         }
     }
 
-    ///REPARACIONES
+    //                        REPARACIONES
+
+    /**
+     * Sub-menu de Reparaciones: listar, listar activas, buscar, agregar, modificar, iniciar y finalizar.
+     * Las reparaciones no tienen baja: son un registro historico del taller.
+     */
     private static void menuReparaciones(SistemaTaller taller) {
         int op = -1;
         while (op != 0) {
             System.out.println("\n-- Reparaciones --");
-            System.out.println("1. Listar  2. Listar activas  3. Buscar  4. Agregar  5. Modificar  6. Iniciar  7. Finalizar  0. Volver");
+            System.out.println("1. Listar  2. Listar activas  3. Buscar  4. Agregar  5. Modificar  6. Iniciar" +
+                    "  7. Finalizar  0. Volver");
             op = Consola.entero("Opcion: ");
 
             try {

@@ -11,11 +11,39 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * Clase gestora del taller (equivale a AlumnoServicio del ejemplo de clase).
+ * Mantiene map de clientes, map de empleados, set de vehiculos,
+ * lista de reparaciones y lista de turnos EN MEMORIA, y usa los DAO para
+ * mantenerlos sincronizados con MySQL.
+ * Funcionamiento (igual que el ejemplo):
+ *  - Al crearse, el constructor carga ttodo desde la base de datos.
+ *  - Cada alta / baja / modificacion se hace PRIMERO en MySQL (DAO) y, solo si salio bien,
+ *    se refleja en la coleccion en memoria. Asi memoria y base nunca quedan distintas.
+ *  - Las busquedas y listados se hacen sobre la memoria.
+ *  - SQLException no se atrapa aca: se propaga hacia arriba (hasta los menus),
+ *    que son los que le avisan al usuario.
+ * Esta clase es la que valida las reglas de negocio (cliente activo, vehiculo del cliente,
+ * mecanico valido, etc.) y lanza las excepciones personalizadas.
+ */
 public class SistemaTaller {
 
+    /// Elegimos Map<String, Cliente> porque el DNI es unico por definicion, lo que nos permite
+    /// busqueda directa por clave en lugar de recorrer toda una lista. Es critico porque
+    /// turnos, reparaciones y el login referencian personas por DNI constantemente.
+    /// Usamos LinkedHashMap (sigue siendo un Map) para que los listados salgan en el mismo
+    /// orden en que vienen de la base de datos (ordenados por DNI) y no mezclados.
     private Map<String, Cliente> clientes = new LinkedHashMap<>(); // clave = DNI
     private Map<String, Empleado> empleados = new LinkedHashMap<>(); // clave = DNI
+
+    /// Usamos Set<Vehiculo> porque no puede haber 2 vehiculos iguales: Vehiculo define equals y
+    /// hashCode por patente, asi el Set rechaza duplicados solo. (En la base de datos la patente
+    /// es PRIMARY KEY.) LinkedHashSet mantiene el orden de carga.
     private Set<Vehiculo> vehiculos = new LinkedHashSet<>();
+
+    /// Usamos List para reparaciones y turnos porque un mismo vehiculo puede tener muchas
+    /// reparaciones y muchos turnos (permite repetidos), importa el orden de carga y se recorren
+    /// completas en los listados. Se identifican por id autoincremental de la base de datos.
     private List<Reparacion> reparaciones = new ArrayList<>();
     private List<Turno> turnos = new ArrayList<>();
 
@@ -25,10 +53,22 @@ public class SistemaTaller {
     private final ReparacionDAO reparacionDAO = new ReparacionDAO();
     private final TurnoDAO turnoDAO = new TurnoDAO();
 
+    /**
+     * Cuando se invoca el constructor se consulta MySQL y se cargan las colecciones.
+     * Si la base no responde, SQLException sube hasta el Main y NO se crea el sistema
+     * con las colecciones vacias.
+     */
     public SistemaTaller() throws SQLException {
         cargarTodo();
     }
 
+    //                    CARGA INICIAL
+
+    /**
+     * Carga desde MySQL ttodo a memoria. Primero se traen todas las listas a variables
+     * auxiliares: si alguna consulta falla, las colecciones actuales no se tocan
+     * (mismo motivo que en cargarAlumnos del ejemplo).
+     */
     public void cargarTodo() throws SQLException {
         List<Cliente> listaClientes = clienteDAO.listar();
         List<Empleado> listaEmpleados = empleadoDAO.listar();
@@ -51,6 +91,8 @@ public class SistemaTaller {
         turnos.clear();
         turnos.addAll(listaTurnos);
 
+        // La lista de patentes de cada cliente no esta en la base: se arma a partir de
+        // los vehiculos ACTIVOS de cada duenio (una sola fuente de verdad).
         for (Vehiculo v : vehiculos) {
             Cliente dueno = clientes.get(v.getDniDuenio());
             if (dueno != null && v.isActivo()) {
@@ -59,7 +101,18 @@ public class SistemaTaller {
         }
     }
 
-    /// inicio de sesion
+
+    //                     INICIO DE SESION
+
+    /**
+     * Valida DNI y contrasenia. Hay dos tipos de acceso:
+     *  - ADMINISTRADOR (un empleado con cargo ADMINISTRADOR activo)
+     *  - CLIENTE (activo)
+     * Devuelve una Persona (polimorfismo): el Main decide que menu mostrar segun su tipo real.
+     *
+     * @throws CredencialesInvalidasException si el DNI/contrasenia no coinciden o el empleado no tiene acceso
+     * @throws ClienteNoActivoException si el cliente esta dado de baja (no puede ingresar)
+     */
     public Persona autenticar(String dni, String password)
             throws CredencialesInvalidasException, ClienteNoActivoException {
 
@@ -88,8 +141,16 @@ public class SistemaTaller {
         return cliente;
     }
 
-    /// clientes
 
+    //                       CLIENTES
+
+    /**
+     * Agrega un cliente nuevo (primero en MySQL, despues en memoria).
+     * El DNI no puede estar repetido ni entre clientes ni entre empleados
+     * (el login usa el DNI para identificar a cualquier usuario).
+     * @return true si se pudo agregar
+     * @throws ElementoDuplicadoException si ya existe una persona con ese DNI
+     */
     public boolean agregarCliente(Cliente c) throws SQLException, ElementoDuplicadoException {
         if (clientes.containsKey(c.getDni()) || empleados.containsKey(c.getDni())) {
             throw new ElementoDuplicadoException("Ya existe una persona con DNI: " + c.getDni());
@@ -101,6 +162,10 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * Busca un cliente por DNI (en memoria). Devuelve tambien a los dados de baja.
+     * @throws ClienteNoEncontradoException si no existe
+     */
     public Cliente buscarCliente(String dni) throws ClienteNoEncontradoException {
         Cliente c = clientes.get(dni);
         if (c == null) {
@@ -109,10 +174,16 @@ public class SistemaTaller {
         return c;
     }
 
+    /** Devuelve una copia de la coleccion para proteger la original (activos y dados de baja). */
     public List<Cliente> listarClientes() {
         return new ArrayList<>(clientes.values());
     }
 
+    /**
+     * Modifica nombre, telefono y email de un cliente. Se crea un Cliente nuevo (el constructor
+     * valida todos los datos juntos) y recien si la base lo acepta reemplaza al anterior.
+     * El DNI, la contrasenia, el estado y los vehiculos se conservan.
+     */
     public boolean modificarCliente(String dni, String nuevoNombre, String nuevoTelefono, String nuevoEmail)
             throws SQLException, ClienteNoEncontradoException {
         Cliente anterior = buscarCliente(dni);
@@ -130,6 +201,11 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * BAJA LOGICA del cliente: activo = false en MySQL y en memoria. No se borra para conservar
+     * su historial de vehiculos y reparaciones.
+     * @throws ClienteNoActivoException si el cliente ya estaba dado de baja
+     */
     public boolean darDeBajaCliente(String dni)
             throws SQLException, ClienteNoEncontradoException, ClienteNoActivoException {
         Cliente c = buscarCliente(dni);
@@ -143,8 +219,12 @@ public class SistemaTaller {
         return false;
     }
 
-    /// empleados
+    //                         EMPLEADOS
 
+    /**
+     * Agrega un empleado nuevo (primero en MySQL, despues en memoria).
+     * @throws ElementoDuplicadoException si ya existe una persona con ese DNI
+     */
     public boolean agregarEmpleado(Empleado e) throws SQLException, ElementoDuplicadoException {
         if (empleados.containsKey(e.getDni()) || clientes.containsKey(e.getDni())) {
             throw new ElementoDuplicadoException("Ya existe una persona con DNI: " + e.getDni());
@@ -156,6 +236,10 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * Busca un empleado por DNI (en memoria).
+     * @throws EmpleadoNoEncontradoException si no existe
+     */
     public Empleado buscarEmpleado(String dni) throws EmpleadoNoEncontradoException {
         Empleado e = empleados.get(dni);
         if (e == null) {
@@ -168,6 +252,7 @@ public class SistemaTaller {
         return new ArrayList<>(empleados.values());
     }
 
+    /** Mecanicos activos: es la lista de la que se puede elegir un mecanico para un turno. */
     public List<Empleado> listarMecanicosActivos() {
         List<Empleado> resultado = new ArrayList<>();
         for (Empleado e : empleados.values()) {
@@ -178,6 +263,10 @@ public class SistemaTaller {
         return resultado;
     }
 
+    /**
+     * Modifica un empleado (mismo mecanismo que modificarCliente: objeto nuevo validado por el constructor).
+     * No permite sacarle el cargo de ADMINISTRADOR al unico administrador activo (nadie podria volver a ingresar).
+     */
     public boolean modificarEmpleado(String dni, String nuevoNombre, String nuevoTelefono, String nuevoEmail,
                                      Cargo nuevoCargo, double nuevoSalario)
             throws SQLException, EmpleadoNoEncontradoException {
@@ -199,6 +288,11 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * BAJA LOGICA del empleado. No se borra porque las reparaciones y los turnos lo referencian
+     * por DNI (con una baja fisica quedarian huerfanos).
+     * No permite dar de baja al unico administrador activo.
+     */
     public boolean darDeBajaEmpleado(String dni) throws SQLException, EmpleadoNoEncontradoException {
         Empleado e = buscarEmpleado(dni);
         if (!e.isActivo()) {
@@ -224,8 +318,13 @@ public class SistemaTaller {
         return cantidad;
     }
 
-    /// vehiculos
+    //                                 VEHICULOS
 
+    /**
+     * Agrega un vehiculo nuevo. El duenio tiene que existir y estar activo, y la patente
+     * no puede estar repetida (el Set lo detecta por equals/hashCode).
+     * Ademas agrega la patente a la lista de vehiculos del cliente.
+     */
     public boolean agregarVehiculo(Vehiculo v)
             throws SQLException, ClienteNoActivoException, ElementoDuplicadoException {
         Cliente dueno = obtenerClienteActivo(v.getDniDuenio());
@@ -240,6 +339,10 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * Busca un vehiculo por patente (en memoria, sin importar mayusculas). Devuelve tambien los dados de baja.
+     * @throws VehiculoNoEncontradoException si no existe
+     */
     public Vehiculo buscarVehiculo(String patente) throws VehiculoNoEncontradoException {
         Vehiculo v = buscarVehiculoONull(patente);
         if (v == null) {
@@ -252,6 +355,9 @@ public class SistemaTaller {
         return new ArrayList<>(vehiculos);
     }
 
+    /**
+     * Lista los vehiculos activos de un cliente usando la lista de patentes que tiene el propio cliente.
+     */
     public List<Vehiculo> listarVehiculosPorCliente(String dniCliente) throws ClienteNoEncontradoException {
         Cliente c = buscarCliente(dniCliente);
         List<Vehiculo> resultado = new ArrayList<>();
@@ -264,6 +370,10 @@ public class SistemaTaller {
         return resultado;
     }
 
+    /**
+     * Modifica marca, modelo y anio de un vehiculo (la patente y el duenio no cambian).
+     * En un Set no se puede "reemplazar" un elemento igual, por eso se saca el viejo y se agrega el nuevo.
+     */
     public boolean modificarVehiculo(String patente, String nuevaMarca, String nuevoModelo, int nuevoAnio)
             throws SQLException, VehiculoNoEncontradoException {
         Vehiculo anterior = buscarVehiculo(patente);
@@ -280,6 +390,10 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * BAJA LOGICA del vehiculo (se conserva el historial). No se puede dar de baja
+     * un vehiculo que tiene reparaciones activas.
+     */
     public boolean darDeBajaVehiculo(String patente) throws SQLException, VehiculoNoEncontradoException {
         Vehiculo v = buscarVehiculo(patente);
         if (!v.isActivo()) {
@@ -302,8 +416,13 @@ public class SistemaTaller {
         return false;
     }
 
-    /// reparaciones
+    //                    REPARACIONES
 
+    /**
+     * Agrega una reparacion nueva (nace PENDIENTE). Valida que el vehiculo exista y este activo,
+     * que su duenio este activo y que el mecanico exista, este activo y tenga cargo MECANICO.
+     * La base genera el id autoincremental y queda seteado en el objeto.
+     */
     public boolean agregarReparacion(Reparacion r)
             throws SQLException, VehiculoNoEncontradoException, ClienteNoActivoException,
             EmpleadoNoEncontradoException {
@@ -332,6 +451,7 @@ public class SistemaTaller {
         return new ArrayList<>(reparaciones);
     }
 
+    /** Reparaciones que todavia no estan FINALIZADAS (PENDIENTE o EN_CURSO). */
     public List<Reparacion> listarReparacionesActivas() {
         List<Reparacion> resultado = new ArrayList<>();
         for (Reparacion r : reparaciones) {
@@ -342,6 +462,7 @@ public class SistemaTaller {
         return resultado;
     }
 
+    /** Reparaciones de todos los vehiculos de un cliente (incluso de vehiculos dados de baja: es su historial). */
     public List<Reparacion> listarReparacionesPorCliente(String dniCliente) throws ClienteNoEncontradoException {
         buscarCliente(dniCliente); // lanza excepcion si el cliente no existe
         List<Reparacion> resultado = new ArrayList<>();
@@ -354,6 +475,10 @@ public class SistemaTaller {
         return resultado;
     }
 
+    /**
+     * Modifica descripcion y costo de una reparacion que todavia no finalizo.
+     * Las reparaciones no tienen baja: son un registro historico (contable) del taller.
+     */
     public boolean modificarReparacion(int id, String nuevaDescripcion, double nuevoCosto)
             throws SQLException, ReparacionNoEncontradaException {
         Reparacion anterior = buscarReparacion(id);
@@ -379,6 +504,10 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * Pasa la reparacion de PENDIENTE a EN_CURSO (la propia Reparacion valida el estado).
+     * Si falla el guardado en MySQL se restauran los valores anteriores para que memoria y base coincidan.
+     */
     public boolean iniciarReparacion(int id) throws SQLException, ReparacionNoEncontradaException {
         Reparacion r = buscarReparacion(id);
         EstadoReparacion estadoAnterior = r.getEstado();
@@ -389,6 +518,7 @@ public class SistemaTaller {
         return guardarCambioDeEstado(r, estadoAnterior, inicioAnterior, finAnterior);
     }
 
+    /** Pasa la reparacion de EN_CURSO a FINALIZADA. Mismo mecanismo que iniciarReparacion. */
     public boolean finalizarReparacion(int id) throws SQLException, ReparacionNoEncontradaException {
         Reparacion r = buscarReparacion(id);
         EstadoReparacion estadoAnterior = r.getEstado();
@@ -399,6 +529,7 @@ public class SistemaTaller {
         return guardarCambioDeEstado(r, estadoAnterior, inicioAnterior, finAnterior);
     }
 
+    /** Guarda en MySQL el nuevo estado; si no se puede, deja la reparacion como estaba. */
     private boolean guardarCambioDeEstado(Reparacion r, EstadoReparacion estadoAnterior,
                                           LocalDate inicioAnterior, LocalDate finAnterior) throws SQLException {
         boolean guardado;
@@ -420,8 +551,12 @@ public class SistemaTaller {
         r.setFechaFin(fin);
     }
 
-    /// turnos
+    //                       TURNOS
 
+    /**
+     * Agrega un turno (lo usa el administrador). Valida que el vehiculo exista y este activo,
+     * que su duenio este activo, que el mecanico sea valido y que la fecha no sea pasada.
+     */
     public boolean agregarTurno(Turno t)
             throws SQLException, VehiculoNoEncontradoException, ClienteNoActivoException,
             EmpleadoNoEncontradoException {
@@ -438,6 +573,10 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * Agrega un turno pedido por un cliente. Ademas de las validaciones de agregarTurno,
+     * el vehiculo tiene que ser del cliente que esta logueado.
+     */
     public boolean agregarTurnoDeCliente(String dniCliente, Turno t)
             throws SQLException, VehiculoNoEncontradoException, ClienteNoActivoException,
             EmpleadoNoEncontradoException {
@@ -462,6 +601,7 @@ public class SistemaTaller {
         return new ArrayList<>(turnos);
     }
 
+    /** Turnos de todos los vehiculos de un cliente. */
     public List<Turno> listarTurnosPorCliente(String dniCliente) throws ClienteNoEncontradoException {
         buscarCliente(dniCliente);
         List<Turno> resultado = new ArrayList<>();
@@ -473,6 +613,9 @@ public class SistemaTaller {
         return resultado;
     }
 
+    /**
+     * Cambia el mecanico y la fecha de un turno PENDIENTE (objeto nuevo validado + reemplazo en la lista).
+     */
     public boolean modificarTurno(int id, String nuevoDniMecanico, LocalDate nuevaFecha)
             throws SQLException, TurnoNoEncontradoException, EmpleadoNoEncontradoException {
         Turno anterior = buscarTurno(id);
@@ -492,6 +635,9 @@ public class SistemaTaller {
         return false;
     }
 
+    /**
+     * BAJA LOGICA del turno: pasa a CANCELADO (no se borra). Solo se puede cancelar un turno PENDIENTE.
+     */
     public boolean cancelarTurno(int id) throws SQLException, TurnoNoEncontradoException {
         Turno t = buscarTurno(id);
         if (t.getEstado() != EstadoTurno.PENDIENTE) {
@@ -505,6 +651,7 @@ public class SistemaTaller {
         return false;
     }
 
+    /** Un cliente solo puede cancelar sus propios turnos. */
     public boolean cancelarTurnoDeCliente(String dniCliente, int id) throws SQLException, TurnoNoEncontradoException {
         Turno t = buscarTurno(id);
         if (!turnoPerteneceACliente(t, dniCliente)) {
@@ -513,6 +660,7 @@ public class SistemaTaller {
         return cancelarTurno(id);
     }
 
+    /** Marca un turno PENDIENTE como ATENDIDO. */
     public boolean marcarTurnoAtendido(int id) throws SQLException, TurnoNoEncontradoException {
         Turno anterior = buscarTurno(id);
         if (anterior.getEstado() != EstadoTurno.PENDIENTE) {
@@ -542,8 +690,10 @@ public class SistemaTaller {
         return v != null && v.getDniDuenio().equals(dniCliente);
     }
 
-    /// validaciones auxiliares
+    //                   VALIDACIONES AUXILIARES
+    //        (privadas, las reutilizan los metodos de arriba)
 
+    /** Busca en el Set recorriendolo con un iterador explicito; devuelve null si no esta. */
     private Vehiculo buscarVehiculoONull(String patente) {
         Iterator<Vehiculo> it = vehiculos.iterator();
         while (it.hasNext()) {
@@ -587,12 +737,4 @@ public class SistemaTaller {
             throw new DatosInvalidosException("La fecha del turno no puede ser anterior a hoy");
         }
     }
-
-
-
-
-
-
-
-
 }

@@ -8,13 +8,21 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO de Reparacion (tabla 'reparacion'). El id es AUTO_INCREMENT en MySQL,
+ * por eso insertar() funciona igual que en el ejemplo de clase: devuelve el id generado
+ * y lo setea en el objeto.
+ * Las reparaciones son un registro historico: no se borran ni se dan de baja.
+ */
 public class ReparacionDAO {
 
+    // CREATE: retorna el id autoincremental generado en la base de datos
     public int insertar(Reparacion r) throws SQLException {
 
         String sqlInsert = "INSERT INTO reparacion (patente_vehiculo, dni_mecanico, descripcion, costo, estado, "
                 + "fecha_inicio, fecha_fin) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlGetId = "SELECT LAST_INSERT_ID()";
+        // son 2 consultas porque una agrega en la BD y la otra obtiene el id que genero la BD
 
         try (Connection con = ConexionBD.conectar(); // misma conexion para ambas consultas
              PreparedStatement psInsert = con.prepareStatement(sqlInsert);
@@ -41,6 +49,7 @@ public class ReparacionDAO {
         return -1; // si no pudo hacer la consulta
     }
 
+    // READ: listar todas las reparaciones
     public List<Reparacion> listar() throws SQLException {
         List<Reparacion> reparaciones = new ArrayList<>();
         String sql = "SELECT id, patente_vehiculo, dni_mecanico, descripcion, costo, estado, fecha_inicio, fecha_fin "
@@ -57,6 +66,7 @@ public class ReparacionDAO {
         return reparaciones;
     }
 
+    // READ: buscar por id en la base de datos
     public Reparacion buscarPorId(int id) throws SQLException {
         String sql = "SELECT id, patente_vehiculo, dni_mecanico, descripcion, costo, estado, fecha_inicio, fecha_fin "
                 + "FROM reparacion WHERE id = ?";
@@ -75,6 +85,7 @@ public class ReparacionDAO {
         return null;
     }
 
+    // UPDATE: cambia descripcion, costo, estado y fechas (la patente y el mecanico no cambian)
     public boolean modificar(Reparacion r) throws SQLException {
         String sql = "UPDATE reparacion SET descripcion = ?, costo = ?, estado = ?, fecha_inicio = ?, fecha_fin = ? "
                 + "WHERE id = ?";
@@ -93,6 +104,7 @@ public class ReparacionDAO {
         }
     }
 
+    // LocalDate -> java.sql.Date, o NULL si la fecha todavia no existe
     private void asignarFecha(PreparedStatement ps, int posicion, java.time.LocalDate fecha) throws SQLException {
         if (fecha != null) {
             ps.setDate(posicion, Date.valueOf(fecha));

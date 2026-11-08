@@ -8,8 +8,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO de Turno (tabla 'turno'). El id es AUTO_INCREMENT (igual que Reparacion).
+ * La baja logica del turno es el estado CANCELADO.
+ */
 public class TurnoDAO {
 
+    // CREATE: retorna el id autoincremental generado en la base de datos
     public int insertar(Turno t) throws SQLException {
 
         String sqlInsert = "INSERT INTO turno (patente_vehiculo, dni_mecanico, fecha, estado) VALUES (?, ?, ?, ?)";
@@ -37,6 +42,7 @@ public class TurnoDAO {
         return -1;
     }
 
+    // READ: listar todos los turnos
     public List<Turno> listar() throws SQLException {
         List<Turno> turnos = new ArrayList<>();
         String sql = "SELECT id, patente_vehiculo, dni_mecanico, fecha, estado FROM turno ORDER BY id";
@@ -52,6 +58,7 @@ public class TurnoDAO {
         return turnos;
     }
 
+    // READ: buscar por id en la base de datos
     public Turno buscarPorId(int id) throws SQLException {
         String sql = "SELECT id, patente_vehiculo, dni_mecanico, fecha, estado FROM turno WHERE id = ?";
 
@@ -69,6 +76,7 @@ public class TurnoDAO {
         return null;
     }
 
+    // UPDATE: cambia mecanico, fecha y estado (la patente no cambia)
     public boolean modificar(Turno t) throws SQLException {
         String sql = "UPDATE turno SET dni_mecanico = ?, fecha = ?, estado = ? WHERE id = ?";
 
@@ -84,6 +92,7 @@ public class TurnoDAO {
         }
     }
 
+    // BAJA LOGICA: cancelar un turno no lo borra, lo pasa a estado CANCELADO
     public boolean cancelar(int id) throws SQLException {
         String sql = "UPDATE turno SET estado = 'CANCELADO' WHERE id = ?";
 

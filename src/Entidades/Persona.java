@@ -73,9 +73,3 @@ public abstract class Persona {
 }
 
 
-
-
-
-
-
-
