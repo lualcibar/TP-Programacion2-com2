@@ -8,7 +8,6 @@ import java.sql.SQLException;
  * Clase que se encarga unicamente de abrir conexiones con la base de datos MySQL.
  * Es la misma logica del ejemplo de clase: los DAO piden una conexion cada vez
  * que la necesitan y la cierran solos (try-with-resources).
- *
  * IMPORTANTE: si tu MySQL tiene otro usuario o contrasenia, cambialos aca.
  * La base de datos se crea con el script database/taller_mecanico.sql
  */

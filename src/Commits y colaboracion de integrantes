@@ -1,0 +1,11 @@
+
+ si se pega esto en la terminal se ve asi
+Autor     Commits Agregadas Eliminadas
+-----     ------- --------- ----------
+lualcibar       x         x          x
+MicaCampo       x         x          x
+
+$s=@{}; git log --all --no-merges --use-mailmap --numstat --format="@%aN" | ForEach-Object {
+  if ($_ -like "@*") { $n=$_.Substring(1); if (-not $s.ContainsKey($n)) { $s[$n]=[pscustomobject]@{Autor=$n;Commits=0;Agregadas=0;Eliminadas=0} }; $s[$n].Commits++ }
+  elseif ($_ -match "^(\d+)\t(\d+)\t") { $s[$n].Agregadas+=[int]$matches[1]; $s[$n].Eliminadas+=[int]$matches[2] }
+}; $s.Values | Format-Table -AutoSize
