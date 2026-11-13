@@ -11,7 +11,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO de Empleado (tabla 'empleado'). Misma logica que ClienteDAO.
+ * El cargo se guarda como texto (enum de MySQL) y se convierte con Cargo.valueOf().
+ */
 public class EmpleadoDAO {
+
 
     public boolean insertar(Empleado e) throws SQLException {
         String sql = "INSERT INTO empleado (dni, nombre, telefono, email, password, cargo, salario, activo) "
@@ -33,6 +38,7 @@ public class EmpleadoDAO {
         }
     }
 
+    // listar todos los empleados
     public List<Empleado> listar() throws SQLException {
         List<Empleado> empleados = new ArrayList<>();
         String sql = "SELECT dni, nombre, telefono, email, password, cargo, salario, activo FROM empleado ORDER BY dni";
@@ -48,6 +54,7 @@ public class EmpleadoDAO {
         return empleados;
     }
 
+    // buscar por DNI en la base de datos
     public Empleado buscarPorDni(String dni) throws SQLException {
         String sql = "SELECT dni, nombre, telefono, email, password, cargo, salario, activo FROM empleado WHERE dni = ?";
 
@@ -65,6 +72,7 @@ public class EmpleadoDAO {
         return null;
     }
 
+    // UPDATE
     public boolean modificar(Empleado e) throws SQLException {
         String sql = "UPDATE empleado SET nombre = ?, telefono = ?, email = ?, password = ?, "
                 + "cargo = ?, salario = ?, activo = ? WHERE dni = ?";
@@ -85,6 +93,7 @@ public class EmpleadoDAO {
         }
     }
 
+    // BAJA LOGICA: las reparaciones y turnos referencian al empleado, por eso no se borra la fila
     public boolean darDeBaja(String dni) throws SQLException {
         String sql = "UPDATE empleado SET activo = FALSE WHERE dni = ?";
 

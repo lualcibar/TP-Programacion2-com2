@@ -1,7 +1,7 @@
 package Persistencia;
 
-import Entidades.Cliente;
 import Conexion.ConexionBD;
+import Entidades.Cliente;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,11 +10,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO (Data Access Object) de Cliente: es la UNICA clase que sabe como se guardan
+ * los clientes en MySQL (tabla 'cliente'). Solo ejecuta consultas, no tiene logica de negocio.
+ * Mismo esquema que el ejemplo de clase: cada metodo abre su conexion con
+ * try-with-resources (se cierra sola) y usa PreparedStatement con parametros '?'.
+ * Como el DNI es la clave primaria (no es autoincremental), insertar devuelve boolean.
+ */
 public class ClienteDAO {
 
+    // insertar un cliente
     public boolean insertar(Cliente c) throws SQLException {
-        String sql = "INSERT INTO cliente (dni, nombre, telefono, email, password, activo) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cliente (dni, nombre, telefono, email, password, activo) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection con = ConexionBD.conectar();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -30,6 +37,7 @@ public class ClienteDAO {
         }
     }
 
+    // listar todos los clientes (activos y dados de baja)
     public List<Cliente> listar() throws SQLException {
         List<Cliente> clientes = new ArrayList<>();
         String sql = "SELECT dni, nombre, telefono, email, password, activo FROM cliente ORDER BY dni";
@@ -45,6 +53,7 @@ public class ClienteDAO {
         return clientes;
     }
 
+    // buscar un cliente por su DNI directamente en la base de datos
     public Cliente buscarPorDni(String dni) throws SQLException {
         String sql = "SELECT dni, nombre, telefono, email, password, activo FROM cliente WHERE dni = ?";
 
@@ -62,6 +71,7 @@ public class ClienteDAO {
         return null;
     }
 
+    // modificar un cliente existente (el dni no cambia, es la clave)
     public boolean modificar(Cliente c) throws SQLException {
         String sql = "UPDATE cliente SET nombre = ?, telefono = ?, email = ?, password = ?, activo = ? WHERE dni = ?";
 
@@ -79,6 +89,8 @@ public class ClienteDAO {
         }
     }
 
+    // "DELETE" LOGICO, en vez de borrar la fila, la marcamos como inactiva (UPDATE).
+    // Asi se conserva el historial de vehiculos y reparaciones del cliente.
     public boolean darDeBaja(String dni) throws SQLException {
         String sql = "UPDATE cliente SET activo = FALSE WHERE dni = ?";
 
@@ -91,6 +103,7 @@ public class ClienteDAO {
         }
     }
 
+    // Arma un objeto Cliente a partir de la fila actual del ResultSet
     private Cliente armarCliente(ResultSet rs) throws SQLException {
         Cliente c = new Cliente(
                 rs.getString("nombre"),
