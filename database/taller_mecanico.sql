@@ -15,10 +15,10 @@
 
 DROP DATABASE IF EXISTS taller_mecanico;
 CREATE DATABASE taller_mecanico CHARACTER
-SET utf8mb4 --es la codificación de los textos. Sirve para guardar bien tildes y eñes (Pérez, Rodríguez, Núñez).
-COLLATE utf8mb4_general_ci; --son las reglas para comparar textos.
-                            --El ci significa que no distingue mayúsculas de minúsculas,
-                            --así que ab123cd y AB123CD son la misma patente en la clave primaria.
+SET utf8mb4 -- es la codificación de los textos. Sirve para guardar bien tildes y eñes (Pérez, Rodríguez, Núñez).
+COLLATE utf8mb4_general_ci; -- son las reglas para comparar textos.
+                            -- El ci significa que no distingue mayúsculas de minúsculas,
+                            -- así que ab123cd y AB123CD son la misma patente en la clave primaria.
 USE taller_mecanico;
 
 CREATE TABLE cliente (
@@ -94,7 +94,7 @@ INSERT INTO cliente (dni, nombre, telefono, email, password, activo) VALUES
 
 --            EMPLEADOS (15)
 INSERT INTO empleado (dni, nombre, telefono, email, password, cargo, salario, activo) VALUES
-    ('15123456', 'Roberto Sánchez', '2231234567', 'roberto@taller.com', '1234', 'ADMINISTRADOR', 200000, TRUE),
+    ('15123456', 'Roberto Sánchez', '2231234567', 'roberto@taller.com', 'admin123', 'ADMINISTRADOR', 200000, TRUE),
     ('17901234', 'Hernán Ortiz', '2239012345', 'hernan@taller.com', '1234', 'MECANICO', 145000, TRUE),
     ('19345678', 'Jorge Medina', '2233456789', 'jorge@taller.com', '1234', 'MECANICO', 155000, TRUE),
     ('21123456', 'Alejandro Gil', '2231234560', 'alejandro@taller.com', 'admin123', 'ADMINISTRADOR', 195000, TRUE),
@@ -163,3 +163,6 @@ INSERT INTO turno (id, patente_vehiculo, dni_mecanico, fecha, estado) VALUES
     (13, 'AB456WX', '47832917', '2026-07-10', 'PENDIENTE'),
     (14, 'CD789YZ', '32456789', '2026-07-11', 'PENDIENTE'),
     (15, 'AB786RG', '39678901', '2026-07-14', 'PENDIENTE');
+
+
+
