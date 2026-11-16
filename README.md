@@ -124,11 +124,11 @@ El script [`database/taller_mecanico.sql`](database/taller_mecanico.sql) crea la
 
 ----
 
-## 🤝 Trabajo en equipo
+## Trabajo en equipo
 
 El proyecto se desarrolló en equipo con **Git y GitHub**, con una rama de trabajo por integrante (`test-lu` y `test-mica`) que se integra en `main`.
 
-## 👩‍💻 Integrantes
+## Integrantes
 
 | Integrante | GitHub |
 |---|---|
