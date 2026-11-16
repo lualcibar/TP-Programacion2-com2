@@ -12,6 +12,7 @@
 
 ## ¿De qué se trata?
 
+
 Un taller mecánico necesita saber **quién es el dueño de cada vehículo, cuándo viene y qué trabajo se le está haciendo**.
 Este sistema lo resuelve por consola: se registran clientes, empleados y vehículos, los clientes sacan **turnos**, y el taller
 abre y sigue las **reparaciones** hasta que el auto queda listo.
