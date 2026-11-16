@@ -33,7 +33,7 @@ public class Vehiculo {
         if (modelo == null || modelo.isBlank()) {
             throw new DatosInvalidosException("Modelo no puede ser nulo o vacio");
         }
-        if (anio < 1980 || anio > LocalDate.now().getYear()) {
+        if (anio < 1700 || anio > LocalDate.now().getYear()) {
             throw new DatosInvalidosException("Anio ingresado no valido");
         }
         if (dniDuenio == null || dniDuenio.isBlank()) {
