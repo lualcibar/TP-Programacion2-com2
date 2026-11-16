@@ -2,16 +2,4 @@
 
 
 
- Se debe 
- --crear una clase gestora, considero como nombre SistemaTaller o GestorTaller*
- hecho
- --pensar en como administrar los autos, motos o que vehiculo puedan ser*
- hecho
- --usar maps para relacionar tipo clave valor a los vehiculos con los clientes tiene el problema de si un cliente tiene mas de un vehiculo*
- hecho
-
-
- falta 
- --hacer un menu para admin y uno para user, se accedera a cada uno de estos mediante usuario y contrasenia
- --utilizar jdbc para persistencia de datos\
- 
+<img width="4719" height="2195" alt="UML_completo" src="https://github.com/user-attachments/assets/73ac3f1d-2359-49c9-8dd5-2f5000f8a9be" />
