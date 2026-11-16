@@ -17,7 +17,7 @@ import java.util.*;
  * lista de reparaciones y lista de turnos EN MEMORIA, y usa los DAO para
  * mantenerlos sincronizados con MySQL.
  * Funcionamiento (igual que el ejemplo):
- *  - Al crearse, el constructor carga ttodo desde la base de datos.
+ *  - Al crearse, el constructor carga todo desde la base de datos.
  *  - Cada alta / baja / modificacion se hace PRIMERO en MySQL (DAO) y, solo si salio bien,
  *    se refleja en la coleccion en memoria. Asi memoria y base nunca quedan distintas.
  *  - Las busquedas y listados se hacen sobre la memoria.
@@ -65,7 +65,7 @@ public class SistemaTaller {
     //                    CARGA INICIAL
 
     /**
-     * Carga desde MySQL ttodo a memoria. Primero se traen todas las listas a variables
+     * Carga desde MySQL todo a memoria. Primero se traen todas las listas a variables
      * auxiliares: si alguna consulta falla, las colecciones actuales no se tocan
      * (mismo motivo que en cargarAlumnos del ejemplo).
      */

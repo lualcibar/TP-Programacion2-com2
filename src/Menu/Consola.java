@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 /**
  * Clase auxiliar para leer datos por teclado de forma segura.
- * Hay UN solo Scanner para ttodo el programa (varios Scanner sobre System.in se pisan entre si).
+ * Hay UN solo Scanner para todo el programa (varios Scanner sobre System.in se pisan entre si).
  * Si el usuario escribe algo invalido (letras donde va un numero, una fecha mal escrita, etc.)
  * se le vuelve a pedir el dato en lugar de que el programa se caiga.
  */

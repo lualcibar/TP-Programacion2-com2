@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 /**
  * Punto de entrada del sistema del taller mecanico.
- * 1) Crea el SistemaTaller (que carga ttodo desde MySQL).
+ * 1) Crea el SistemaTaller (que carga todo desde MySQL).
  * 2) Pide DNI y contrasenia (3 intentos).
  * 3) Segun el tipo de usuario muestra el menu de ADMINISTRADOR o el de CLIENTE.
  * Antes de ejecutar: correr database/taller_mecanico.sql en MySQL y agregar

@@ -9,7 +9,7 @@ import Exceptions.DatosInvalidosException;
  * no se borra de la base de datos, solo se marca activo = false (asi se conserva su historial).
  * Encapsulamiento: todos los datos se validan en el constructor y no hay setters
  * que permitan saltear esas validaciones. Para "modificar" una persona, el SistemaTaller
- * crea un objeto nuevo (el constructor valida ttodo) y lo reemplaza.
+ * crea un objeto nuevo (el constructor valida todo) y lo reemplaza.
  */
 public abstract class Persona {
     protected String nombre;
