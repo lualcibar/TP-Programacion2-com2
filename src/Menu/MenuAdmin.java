@@ -72,6 +72,26 @@ public final class MenuAdmin {
         }
     }
 
+    /** Lista cada cliente y, debajo, sus vehiculos (los dados de baja se marcan en el toString). */
+    private static void mostrarClientesConVehiculos(SistemaTaller taller) {
+        List<Cliente> clientes = taller.listarClientes();
+        if (clientes.isEmpty()) {
+            System.out.println("No hay clientes cargados.");
+            return;
+        }
+        for (Cliente c : clientes) {
+            System.out.println(" - " + c);
+            List<Vehiculo> autos = taller.listarTodosLosVehiculosDeCliente(c.getDni());
+            if (autos.isEmpty()) {
+                System.out.println("      (sin vehiculos)");
+            } else {
+                for (Vehiculo v : autos) {
+                    System.out.println("      * " + v);
+                }
+            }
+        }
+    }
+
     //                    CLIENTES
 
     /**
@@ -81,13 +101,13 @@ public final class MenuAdmin {
         int op = -1;
         while (op != 0) {
             System.out.println("\n-- Clientes --");
-            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Dar de baja  0. Volver");
+            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Dar de baja  6. Dar de alta  0. Volver");
             op = Consola.entero("Opcion: ");
 
             try {
                 switch (op) {
                     case 1:
-                        mostrarLista(taller.listarClientes(), "No hay clientes cargados.");
+                        mostrarClientesConVehiculos(taller);
                         break;
                     case 2: {
                         String dni = Consola.texto("DNI a buscar: ");
@@ -120,6 +140,12 @@ public final class MenuAdmin {
                                 "Cliente dado de baja.", "No se pudo dar de baja al cliente.");
                         break;
                     }
+                    case 6: {
+                        String dni = Consola.texto("DNI del cliente a dar de alta: ");
+                        Consola.resultado(taller.darDeAltaCliente(dni),
+                                "Cliente dado de alta (con sus vehiculos).", "No se pudo dar de alta al cliente.");
+                        break;
+                    }
                     case 0:
                         break;
                     default:
@@ -144,7 +170,8 @@ public final class MenuAdmin {
         int op = -1;
         while (op != 0) {
             System.out.println("\n-- Empleados --");
-            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Dar de baja  0. Volver");
+            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Dar de baja  6. Dar de alta  " +
+                    "0. Volver");
             op = Consola.entero("Opcion: ");
 
             try {
@@ -187,6 +214,12 @@ public final class MenuAdmin {
                                 "Empleado dado de baja.", "No se pudo dar de baja al empleado.");
                         break;
                     }
+                    case 6: {
+                        String dni = Consola.texto("DNI del empleado a dar de alta: ");
+                        Consola.resultado(taller.darDeAltaEmpleado(dni),
+                                "Empleado dado de alta", "No se pudo dar de alta empleado.");
+                        break;
+                    }
                     case 0:
                         break;
                     default:
@@ -211,7 +244,8 @@ public final class MenuAdmin {
         int op = -1;
         while (op != 0) {
             System.out.println("\n-- Vehiculos --");
-            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Dar de baja  0. Volver");
+            System.out.println("1. Listar  2. Buscar  3. Agregar  4. Modificar  5. Dar de baja  6. Dar de alta  " +
+                    "0. Volver");
             op = Consola.entero("Opcion: ");
 
             try {
@@ -248,6 +282,12 @@ public final class MenuAdmin {
                         String patente = Consola.texto("Patente del vehiculo a dar de baja: ");
                         Consola.resultado(taller.darDeBajaVehiculo(patente),
                                 "Vehiculo dado de baja.", "No se pudo dar de baja el vehiculo.");
+                        break;
+                    }
+                    case 6: {
+                        String patente = Consola.texto("Patente del vehiculo a dar de alta: ");
+                        Consola.resultado(taller.darDeAltaVehiculo(patente),
+                                "Vehiculo dado de alta.",  "No se pudo dar de alta el vehiculo.");
                         break;
                     }
                     case 0:

@@ -59,7 +59,7 @@ public class Vehiculo {
     @Override
     public String toString() {
         return patente + " - " + marca + " - " + modelo + " (" + anio + ") - Duenio DNI: "
-                + dniDuenio + (activo ? "" : " - DADO DE BAJA");
+                + dniDuenio + (activo ? " - ACTIVO" : " - DADO DE BAJA");
     }
 
     /**

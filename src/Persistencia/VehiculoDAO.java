@@ -49,24 +49,6 @@ public class VehiculoDAO {
         return vehiculos;
     }
 
-    // READ: buscar por patente en la base de datos
-    public Vehiculo buscarPorPatente(String patente) throws SQLException {
-        String sql = "SELECT patente, marca, modelo, anio, dni_duenio, activo FROM vehiculo WHERE patente = ?";
-
-        try (Connection con = ConexionBD.conectar();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, patente);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return armarVehiculo(rs);
-                }
-            }
-        }
-        return null;
-    }
-
     // UPDATE (la patente y el duenio no cambian)
     public boolean modificar(Vehiculo v) throws SQLException {
         String sql = "UPDATE vehiculo SET marca = ?, modelo = ?, anio = ?, activo = ? WHERE patente = ?";
@@ -90,6 +72,18 @@ public class VehiculoDAO {
 
         try (Connection con = ConexionBD.conectar();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, patente);
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    //UPDATE: damos de alta el vehiculo
+    public boolean darDeAlta (String patente) throws SQLException {
+        String sql = "UPDATE vehiculo SET activo = true WHERE patente = ?";
+        try (Connection con = ConexionBD.conectar();
+        PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, patente);
 

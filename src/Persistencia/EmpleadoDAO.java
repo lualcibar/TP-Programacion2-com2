@@ -106,6 +106,19 @@ public class EmpleadoDAO {
         }
     }
 
+    //UPDATE: dar de alta un empleado
+    public boolean darDeAlta (String dni) throws SQLException {
+        String sql = "UPDATE empleado SET activo = true WHERE dni = ?";
+        try (Connection con = ConexionBD.conectar();
+        PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, dni);
+
+            return ps.executeUpdate() > 0;
+
+        }
+    }
+
     private Empleado armarEmpleado(ResultSet rs) throws SQLException {
         Empleado e = new Empleado(
                 rs.getString("nombre"),

@@ -103,6 +103,18 @@ public class ClienteDAO {
         }
     }
 
+    // UPDATE, clase para dar de alta un cliente
+    public boolean darDeAlta (String dni) throws SQLException {
+        String sql = "UPDATE cliente SET activo = true WHERE dni = ?";
+        try (Connection con = ConexionBD.conectar();
+        PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, dni);
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     // Arma un objeto Cliente a partir de la fila actual del ResultSet
     private Cliente armarCliente(ResultSet rs) throws SQLException {
         Cliente c = new Cliente(

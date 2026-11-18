@@ -212,11 +212,60 @@ public class SistemaTaller {
         if (!c.isActivo()) {
             throw new ClienteNoActivoException(dni);
         }
+
+        List<Vehiculo> aDarDeBaja = new ArrayList<>();
+        for (Vehiculo v : vehiculos) {
+            if (v.getDniDuenio().equals(dni) && v.isActivo()) {
+                for (Reparacion r : reparaciones) {
+                    if (r.getPatenteVehiculo().equalsIgnoreCase(v.getPatente()) && r.estaActiva()) {
+                        throw new DatosInvalidosException("No se puede dar de baja al cliente: su vehiculo "
+                                + v.getPatente() + " tiene la reparacion #" + r.getId() + " sin finalizar");
+                    }
+                }
+                aDarDeBaja.add(v);
+            }
+        }
+
         if (clienteDAO.darDeBaja(dni)) {
             c.setActivo(false);
+            for (Vehiculo v : aDarDeBaja) {
+                if (vehiculoDAO.darDeBaja(v.getPatente())) {
+                    v.setActivo(false);
+                    c.eliminarVehiculo(v.getPatente());
+                }
+            }
             return true;
         }
         return false;
+    }
+
+    // damos de alta un cliente ya dado de baja
+    public boolean darDeAltaCliente(String dni) throws SQLException, ClienteNoEncontradoException {
+        Cliente c = buscarCliente(dni);
+        if (c.isActivo()) {
+            throw new DatosInvalidosException("El cliente " + dni + " ya esta activo");
+        }
+        if (clienteDAO.darDeAlta(dni)) {
+            c.setActivo(true);
+            for (Vehiculo v : vehiculos) {
+                if (v.getDniDuenio().equals(dni) && !v.isActivo() && vehiculoDAO.darDeAlta(v.getPatente())) {
+                    v.setActivo(true);
+                    c.agregarVehiculo(v.getPatente());
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public List<Vehiculo> listarTodosLosVehiculosDeCliente(String dniCliente) {
+        List<Vehiculo> resultado = new ArrayList<>();
+        for (Vehiculo v : vehiculos) {
+            if (v.getDniDuenio().equals(dniCliente)) {
+                resultado.add(v);
+            }
+        }
+        return resultado;
     }
 
     //                         EMPLEADOS
@@ -305,6 +354,22 @@ public class SistemaTaller {
             e.setActivo(false);
             return true;
         }
+        return false;
+    }
+
+    // damos de alta un empleado ya dado de baja
+    public boolean darDeAltaEmpleado(String dni)
+            throws SQLException, DatosInvalidosException, EmpleadoNoEncontradoException {
+        Empleado e = buscarEmpleado(dni);
+
+        if (e.isActivo()) {
+            throw new DatosInvalidosException("El empleado " + dni + " ya esta dado de alta");
+        }
+        if (empleadoDAO.darDeAlta(dni)) {
+            e.setActivo(true);
+            return true;
+        }
+
         return false;
     }
 
@@ -413,6 +478,25 @@ public class SistemaTaller {
             }
             return true;
         }
+        return false;
+    }
+
+    // damos de alta un vehiculo ya dado de baja
+    public boolean darDeAltaVehiculo(String patente)
+            throws SQLException, DatosInvalidosException, VehiculoNoEncontradoException, ClienteNoActivoException {
+        Vehiculo v = buscarVehiculo(patente);
+
+        if (v.isActivo()) {
+            throw new DatosInvalidosException("El vehiculo " + v.getPatente() + " ya esta de alta");
+        }
+        // el duenio tiene que estar activo para reactivar su vehiculo
+        Cliente duenio = obtenerClienteActivo(v.getDniDuenio());
+        if (vehiculoDAO.darDeAlta(v.getPatente())) {
+            v.setActivo(true);
+            duenio.agregarVehiculo(v.getPatente()); // vuelve a la lista de vehiculos activos del cliente
+            return true;
+        }
+
         return false;
     }
 
